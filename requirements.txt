@@ -13,3 +13,4 @@ shinywidgets
 scikit-learn
 gdown
 openpyxl
+gspread
