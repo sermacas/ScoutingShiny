@@ -37,9 +37,9 @@ import gdown
 import openpyxl
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
-
-SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE")
+SERVICE_ACCOUNT_FILE = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
 SCOPES = os.getenv("SCOPES")
 
 
