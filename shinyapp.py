@@ -95,9 +95,9 @@ REQUIRED_FIELDS = {
     "Fecha de nacimiento": "nuevo_birthdate"
 }
 
-#GOOGLE_API_KEY = "AIzaSyCWbJpTX280GYCHVdowVO-Tcb1Yt5CboL0"
-#GOOGLE_CX = "a1ecc1f34895d44ec"
-#YOUTUBE_API_KEY = "AIzaSyCWbJpTX280GYCHVdowVO-Tcb1Yt5CboL0"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_CX = os.getenv("GOOGLE_CX")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 # ======================
 # FUNCIONES DE TRANSFERMARKT
