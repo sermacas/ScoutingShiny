@@ -39,23 +39,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
+# Obtener SCOPES como lista desde variable de entorno (separados por coma)
 SCOPES = os.getenv("SCOPES")
 
-
-# Obtener el JSON de la variable de entorno y convertirlo a dict
+# Obtener el JSON desde variable de entorno y convertirlo a dict
 service_account_info = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
 
-
-credentials = Credentials.from_service_account_info(
-    service_account_info,
-    scopes=SCOPES
-)SCOPES = os.getenv("SCOPES")
-
-
-# Obtener el JSON de la variable de entorno y convertirlo a dict
-service_account_info = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
-
-
+# Crear las credenciales desde el dict
 credentials = Credentials.from_service_account_info(
     service_account_info,
     scopes=SCOPES
@@ -64,25 +54,20 @@ credentials = Credentials.from_service_account_info(
 # Autorización y conexión con gspread
 gc = gspread.authorize(credentials)
 
-
+# ID de spreadsheet y hojas
 spreadsheet_id = "1eb2m1nBRo0q5f34H3bBMBXWuwXjkXHsd"
-
 gid_hoja1 = "1098013545"
 gid_hoja2 = "579127624"
 gid_hoja3 = "2005897273"
 
+# Función para obtener la URL CSV
 def url_csv(spreadsheet_id, gid):
     return f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
 
-url_hoja1 = url_csv(spreadsheet_id, gid_hoja1)
-url_hoja2 = url_csv(spreadsheet_id, gid_hoja2)
-url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
-
-df = pd.read_csv(url_hoja1)
-df2 = pd.read_csv(url_hoja2)
-df3 = pd.read_csv(url_hoja3)
-
-
+# Leer los datos como DataFrame
+df = pd.read_csv(url_csv(spreadsheet_id, gid_hoja1))
+df2 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja2))
+df3 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3))
 columns = [
     "season", 
     "playerName", 
