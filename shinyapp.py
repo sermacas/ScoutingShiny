@@ -40,17 +40,16 @@ import plotly.graph_objects as go
 from shiny import App, render, ui, reactive, run_app
 from shinywidgets import output_widget, render_plotly
 import nest_asyncio 
+import gdown
 nest_asyncio.apply()
 
 #df2 = pd.read_excel("/Users/sergiomarincastro/Big Data Deportivo/Proyectos/TFG/df_full.xlsx")
 #df2
 
-import pandas as pd
-import gdown
 
 # ID del archivo de Google Drive
 #file_id = "11-8XS_nzLUOanU2BRlVydAMXJT6pKztP"
-
+file_id = "11-8XS_nzLUOanU2BRlVydAMXJT6pKztP"
 # URL de descarga directa
 url = f"https://drive.google.com/uc?id={file_id}"
 output = "shiny.xlsx"
