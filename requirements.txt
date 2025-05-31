@@ -14,4 +14,4 @@ scikit-learn
 gdown
 openpyxl
 gspread
-Json
+json
