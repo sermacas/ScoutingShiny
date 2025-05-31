@@ -1,0 +1,14 @@
+pandas
+shiny
+nest_asyncio
+asyncio
+requests
+beautifulsoup4
+fpdf
+matplotlib
+numpy
+seaborn
+plotly
+shinywidgets
+scikit-learn
+gdown
