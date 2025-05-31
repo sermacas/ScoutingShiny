@@ -1432,7 +1432,7 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
 
 # Cargar y preparar datos
 def load_data():
-    df4 = pd.read_csv(url_hoja3)
+    df4 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3))
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
