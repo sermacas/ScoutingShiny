@@ -6235,13 +6235,5 @@ def server(input, output, session):
     @reactive.event(input.use_similarity_switch)
     def _():
         use_similarity.set(input.use_similarity_switch())
-# ======================
-# EJECUCIÓN DE LA APLICACIÓN
-# ======================
+
 app = App(app_ui, server)
-
-
-if __name__ == "__main__":
- app = App(app_ui, server)
- print("ready")
-# --------------   --------------  --------------  --------------  --------------  --------------  --------------  --------------
