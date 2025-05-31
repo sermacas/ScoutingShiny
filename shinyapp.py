@@ -35,29 +35,42 @@ import plotly.express as px
 import nest_asyncio 
 import gdown
 import openpyxl
+import gspread
+from google.oauth2.service_account import Credentials
 
-# ID del archivo de Google Drive
-file_id = "11-8XS_nzLUOanU2BRlVydAMXJT6pKztP"
 
-# URL de descarga directa
-url = f"https://drive.google.com/uc?id={file_id}"
-output = "shiny.xlsx"
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE")
+SCOPES = os.getenv("SCOPES")
 
-# Descargar el archivo
-gdown.download(url, output, quiet=False)
 
-# Leer todas las hojas como un diccionario de DataFrames
-hojas = pd.read_excel(output, sheet_name=None, engine="openpyxl")
+os.getenv("GOOGLE_API_KEY")
+# Autenticar con credenciales de servicio
+credentials = Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE,
+    scopes=SCOPES
+)
 
-# Mostrar los nombres de las hojas
-print("Nombres de las hojas:")
-for nombre in hojas.keys():
-    print(f" - {nombre}")
+# Autorización y conexión con gspread
+gc = gspread.authorize(credentials)
 
-# Acceder a cada hoja por nombre o índice
-df = hojas[list(hojas.keys())[0]]  # Primera hoja
-df2 = hojas[list(hojas.keys())[1]]  # Segunda hoja
-df3 = hojas[list(hojas.keys())[2]]  # Tercera hoja
+
+spreadsheet_id = "1eb2m1nBRo0q5f34H3bBMBXWuwXjkXHsd"
+
+gid_hoja1 = "1098013545"
+gid_hoja2 = "579127624"
+gid_hoja3 = "2005897273"
+
+def url_csv(spreadsheet_id, gid):
+    return f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
+
+url_hoja1 = url_csv(spreadsheet_id, gid_hoja1)
+url_hoja2 = url_csv(spreadsheet_id, gid_hoja2)
+url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
+
+df = pd.read_csv(url_hoja1)
+df2 = pd.read_csv(url_hoja2)
+df3 = pd.read_csv(url_hoja3)
+
 
 columns = [
     "season", 
@@ -1423,7 +1436,7 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
 
 # Cargar y preparar datos
 def load_data():
-    df4 = hojas[list(hojas.keys())[2]]  # Tercera hoja
+    df4 = pd.read_csv(url_hoja3)
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
@@ -6237,4 +6250,3 @@ def server(input, output, session):
         use_similarity.set(input.use_similarity_switch())
 
 app = App(app_ui, server)
-run_app(app)
