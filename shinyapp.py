@@ -39,14 +39,25 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
-SERVICE_ACCOUNT_FILE = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
 SCOPES = os.getenv("SCOPES")
 
 
-os.getenv("GOOGLE_API_KEY")
-# Autenticar con credenciales de servicio
-credentials = Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE,
+# Obtener el JSON de la variable de entorno y convertirlo a dict
+service_account_info = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
+
+
+credentials = Credentials.from_service_account_info(
+    service_account_info,
+    scopes=SCOPES
+)SCOPES = os.getenv("SCOPES")
+
+
+# Obtener el JSON de la variable de entorno y convertirlo a dict
+service_account_info = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
+
+
+credentials = Credentials.from_service_account_info(
+    service_account_info,
     scopes=SCOPES
 )
 
