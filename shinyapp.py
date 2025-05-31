@@ -1452,6 +1452,9 @@ def load_data():
     ]
     
     df_selected = df4[selected_columns]
+    # Convert all columns in df_selected to numeric, replacing commas
+    df_selected = df_selected.applymap(lambda x: str(x).replace(',', '.') if isinstance(x, str) else x)
+    df_selected = df_selected.apply(pd.to_numeric, errors='coerce')  # Convert strings to float, NaN if not possible
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(df_selected)
     
