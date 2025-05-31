@@ -85,7 +85,7 @@ columns = [
 
 df = df[[col for col in columns if col in df.columns]]
 
-
+df['playDuration'] = pd.to_numeric(df['playDuration'], errors='coerce')
 # Asumiendo que ya tienes un DataFrame llamado 'df'
 df['playDuration'] = (df['playDuration'] * 4530) / 231093.25
 
