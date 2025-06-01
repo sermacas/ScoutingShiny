@@ -10,3 +10,4 @@ bs4
 fpdf
 requests
 nest_asyncio
+gspread
