@@ -72,7 +72,6 @@ url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
 
 df = pd.read_csv(url_hoja1,low_memory=False)
 df2 = pd.read_csv(url_hoja2,low_memory=False)
-df3 = pd.read_csv(url_hoja3,low_memory=False)
 
 def clean_numeric_columns(df):
     for col in df.select_dtypes(include=['object']).columns:
@@ -3026,6 +3025,8 @@ app_ui = ui.page_fluid(
     """),
     
 ui.navset_card_tab(
+    ui.h3("Estado de carga de Hoja 3"),
+    ui.output_text_verbatim("estado_hoja3"),
     create_player_tab(),
     create_transfermarkt_tab(),
     create_coach_tab(),
@@ -3072,6 +3073,24 @@ ui.navset_card_tab(
 # LÓGICA DEL SERVIDOR
 # ======================
 def server(input, output, session):
+
+    df3 = reactive.value(None)
+    estado = reactive.value("Cargando Hoja 3...")
+
+    @reactive.effect
+    def _():
+        try:
+            df3_temp = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3), low_memory=False)
+            df3_temp = clean_numeric_columns(df3_temp)
+            df3.set(df3_temp)
+            estado.set("✅ Hoja 3 cargada correctamente.")
+        except Exception as e:
+            estado.set(f"❌ Error al cargar Hoja 3: {e}")
+
+    @output
+    @render.text
+    def estado_hoja3():
+        return estado.get()
     # Estado reactivo - almacena los datos principales
     datos = reactive.Value(df.copy())
     
