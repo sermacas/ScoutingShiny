@@ -72,6 +72,7 @@ url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
 
 df = pd.read_csv(url_hoja1, low_memory=False)
 df2 = pd.read_csv(url_hoja2,low_memory=False)
+df3 = pd.read_csv(url_hoja3,low_memory=False)
 
 def clean_numeric_columns(df):
     for col in df.select_dtypes(include=['object']).columns:
@@ -83,6 +84,7 @@ def clean_numeric_columns(df):
 
 df = clean_numeric_columns(df)
 df2 = clean_numeric_columns(df2)
+df3 = clean_numeric_columns(df3)
 
 columns = [
     "season", 
@@ -1899,7 +1901,7 @@ def create_team_comparison_tab():
         )
     )
 
-def cretate_similat_tab():
+def cretate_similar_tab():
     """Crea la pestaña de comparación de equipos con la app integrada"""
     return ui.nav_panel("Similitud de Equipos",
         ui.navset_tab(
@@ -2083,21 +2085,21 @@ def cretate_similat_tab():
                                 ui.h4("Parámetros de Comparación", class_="card-title"),
                                 ui.input_selectize(
                                     "team1_name", "Equipo 1",
-                                    choices=data_objects['unique_teams'],
-                                    selected=data_objects['unique_teams'][0]
+                                    choices=[],  # Will be populated in server
+                                    selected=None
                                 ),
                                 ui.input_selectize(
                                     "team1_season", "Temporada",
-                                    choices=data_objects['team_seasons'][data_objects['unique_teams'][0]]
+                                    choices=[]
                                 ),
                                 ui.input_selectize(
                                     "team2_name", "Equipo 2",
-                                    choices=data_objects['unique_teams'],
-                                    selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
+                                    choices=[],
+                                    selected=None
                                 ),
                                 ui.input_selectize(
                                     "team2_season", "Temporada",
-                                    choices=data_objects['team_seasons'][data_objects['unique_teams'][1]] if len(data_objects['unique_teams']) > 1 else []
+                                    choices=[]
                                 ),
                                 width=300
                             ),
@@ -2125,14 +2127,14 @@ def cretate_similat_tab():
                                     ui.layout_columns(
                                         ui.card(
                                             ui.card_header("Comparación Radar"),
-                                            output_widget("radar_chart2"),
+                                            ui.output_plot("radar_chart2"),  # Changed from output_widget
                                             class_="radar-container"
                                         ),
                                         col_widths=12
                                     ),
                                     ui.card(
                                         ui.card_header("Posición en el Espacio de Clústeres"),
-                                        output_widget("tsne_plot"),
+                                        ui.output_plot("tsne_plot"),  # Changed from output_widget
                                         class_="cluster-plot-container"
                                     )
                                 ),
@@ -2153,7 +2155,7 @@ def cretate_similat_tab():
                                     ),
                                     ui.card(
                                         ui.card_header("Características de los Clústeres"),
-                                        output_widget("cluster_heatmap"),
+                                        ui.output_plot("cluster_heatmap"),  # Changed from output_widget
                                         height="500px"
                                     )
                                 )
@@ -2268,7 +2270,7 @@ def create_player_tab():
 
     
 app_ui = ui.page_fluid(
-    # Add the CSS styles and font links
+    ui.output_text_verbatim("df3_status"),
     ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
     ui.tags.link(href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap", rel="stylesheet"),
     ui.tags.style("""
@@ -2939,76 +2941,52 @@ app_ui = ui.page_fluid(
                 font-weight: bold;
             }
     """),
-    
-ui.navset_card_tab(
-    ui.h3("Estado de carga de Hoja 3"),
-    ui.output_text_verbatim("estado_hoja3"),
-    create_player_tab(),
-    create_transfermarkt_tab(),
-    create_coach_tab(),
-    create_comparison_tab(),
-    create_team_comparison_tab(),
-    cretate_similat_tab(),  # Asegúrate de que esta función esté bien escrita (¿quizás querías "create_similar_tab"?)
-    # En la parte de la UI donde defines tus paneles, añade esto:
-    ui.nav_panel(
-    "Similitud por Posición",
-    ui.div(
-        {"class": "summary-container"},
-        ui.card(
-            ui.card_header("Opciones de Análisis"),
-            ui.layout_sidebar(
-                ui.sidebar(
-                    ui.input_selectize(
-                        "selected_team",
-                        "Equipo de referencia para similitud",
-                        choices=[""] + sorted(data_objects['df']['team_name'].unique().tolist()),
-                    ),
-                    ui.input_switch(
-                        "use_similarity_switch", 
-                        "Usar ajuste por similitud", 
-                        value=True
-                    ),
-                    ui.output_ui("team_similarity_info"),
-                    width=300
-                ),
-                ui.panel_well(
-                    ui.output_ui("resumen_posiciones_html"),
-                    ui.output_ui("similarity_warning")
+        ui.navset_tab(
+        create_player_tab(),
+        create_transfermarkt_tab(),
+        create_coach_tab(),
+        create_comparison_tab(),
+        create_team_comparison_tab(),
+        cretate_similar_tab(),
+        ui.nav_panel(
+            "Similitud por Posición",
+            ui.div(
+                {"class": "summary-container"},
+                ui.card(
+                    ui.card_header("Opciones de Análisis"),
+                    ui.layout_sidebar(
+                        ui.sidebar(
+                            ui.input_selectize(
+                                "selected_team",
+                                "Equipo de referencia para similitud",
+                                choices=[""] + sorted(data_objects['df']['team_name'].unique().tolist()),
+                            ),
+                            ui.input_switch(
+                                "use_similarity_switch", 
+                                "Usar ajuste por similitud", 
+                                value=True
+                            ),
+                            ui.output_ui("team_similarity_info"),
+                            width=300
+                        ),
+                        ui.panel_well(
+                            ui.output_ui("resumen_posiciones_html"),
+                            ui.output_ui("similarity_warning")
+                        )
+                    )
                 )
             )
-        )
+        ),
+        id="main_tabs"
     )
-),
-
-    id="main_tabs",
-    header=ui.div(style="width: 100%;")
-))
+)
 
 
 # ======================
 # LÓGICA DEL SERVIDOR
 # ======================
 def server(input, output, session):
-
-    df3 = reactive.value(None)
-    estado = reactive.value("Cargando Hoja 3...")
-
-    @reactive.effect
-    def _():
-        try:
-            df3_temp = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3), low_memory=False)
-            df3_temp = clean_numeric_columns(df3_temp)
-            df3.set(df3_temp)
-            estado.set("✅ Hoja 3 cargada correctamente.")
-        except Exception as e:
-            estado.set(f"❌ Error al cargar Hoja 3: {e}")
-
-    @output
-    @render.text
-    def estado_hoja3():
-        return estado.get()
-    # Estado reactivo - almacena los datos principales
-    datos = reactive.Value(df.copy())
+    
     
     
     # Estado reactivo para Transfermarkt
@@ -6313,3 +6291,4 @@ def server(input, output, session):
         use_similarity.set(input.use_similarity_switch())
 
 app = App(app_ui, server)
+run_app(app)
