@@ -54,14 +54,17 @@ credentials = Credentials.from_service_account_info(
 gc = gspread.authorize(credentials)
 
 
+
+
 # Ruta al archivo JSON con credenciales de la cuenta de servicio
 SERVICE_ACCOUNT_FILE = "/Users/sergiomarincastro/Big Data Deportivo/Proyectos/TFG/mi_archivo_credenciales.json"
 
-spreadsheet_id = "1eb2m1nBRo0q5f34H3bBMBXWuwXjkXHsd"
+spreadsheet_id = "13v-7cMMUIoSqEJL-QUfVAlFx2AgFqaG7DLlEtyzgDbs"
 
-gid_hoja1 = "1098013545"
-gid_hoja2 = "579127624"
-gid_hoja3 = "2005897273"
+gid_hoja1 = "1269319670"
+gid_hoja2 = "654483830"
+gid_hoja3 = "40604871"
+
 
 def url_csv(spreadsheet_id, gid):
     return f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
@@ -74,17 +77,38 @@ df = pd.read_csv(url_hoja1, low_memory=False)
 df2 = pd.read_csv(url_hoja2,low_memory=False)
 df3 = pd.read_csv(url_hoja3,low_memory=False)
 
-def clean_numeric_columns(df):
-    for col in df.select_dtypes(include=['object']).columns:
-        try:
-            df[col] = df[col].str.replace(',', '.').astype(float)
-        except (ValueError, AttributeError):
-            pass
+def infer_and_clean_numeric(df):
+    for col in df.columns:
+        # Skip if already numeric
+        if pd.api.types.is_numeric_dtype(df[col]):
+            continue
+            
+        # Convert to string and clean
+        sample = df[col].dropna().astype(str)
+        
+        # Replace commas with dots and remove any whitespace
+        sample = sample.str.replace(',', '.').str.strip()
+        
+        # Check what percentage can be converted to numeric
+        numeric_ratio = sample.apply(lambda x: x.replace('.', '', 1).lstrip('-').isdigit()).mean()
+        
+        if numeric_ratio > 0.8:
+            try:
+                # First try converting directly
+                df[col] = pd.to_numeric(sample, errors='coerce')
+                
+                # If all values became NA, try replacing commas first
+                if df[col].isna().all():
+                    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
+            except:
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
+    
     return df
 
-df = clean_numeric_columns(df)
-df2 = clean_numeric_columns(df2)
-df3 = clean_numeric_columns(df3)
+
+df = infer_and_clean_numeric(df)
+df2 = infer_and_clean_numeric(df2)
+df3 = infer_and_clean_numeric(df3)
 
 columns = [
     "season", 
@@ -102,7 +126,6 @@ columns = [
     "DEFENSIVE_IMPECT_SCORE_PACKING"]
 
 df = df[[col for col in columns if col in df.columns]]
-
 
 # Asumiendo que ya tienes un DataFrame llamado 'df'
 df['playDuration'] = (df['playDuration'] * 4530) / 231093.25
@@ -1456,7 +1479,7 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
 
 # Cargar y preparar datos
 def load_data():
-    df4 = pd.read_csv(url_hoja3,low_memory=False)
+    df4 = df3.copy()
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
@@ -1508,7 +1531,6 @@ def load_data():
     }
 
 data_objects = load_data()
-
 # ======================
 # INTERFAZ DE USUARIO (UI)
 # ======================
@@ -2084,18 +2106,17 @@ def cretate_similar_tab():
                             ui.sidebar(
                                 ui.h4("Parámetros de Comparación", class_="card-title"),
                                 ui.input_selectize(
-                                    "team1_name", "Equipo 1",
-                                    choices=[],  # Will be populated in server
-                                    selected=None
-                                ),
+                                "team1_name", "Equipo 1",
+                                choices=data_objects['unique_teams'],  # Inicializado con los equipos disponibles
+                                selected=None),
                                 ui.input_selectize(
                                     "team1_season", "Temporada",
                                     choices=[]
                                 ),
                                 ui.input_selectize(
-                                    "team2_name", "Equipo 2",
-                                    choices=[],
-                                    selected=None
+                                "team2_name", "Equipo 2",
+                                choices=data_objects['unique_teams'],  # Inicializado con los equipos disponibles
+                                selected=None
                                 ),
                                 ui.input_selectize(
                                     "team2_season", "Temporada",
@@ -2986,7 +3007,6 @@ app_ui = ui.page_fluid(
 # LÓGICA DEL SERVIDOR
 # ======================
 def server(input, output, session):
-    
     
     
     # Estado reactivo para Transfermarkt
@@ -5474,7 +5494,7 @@ def server(input, output, session):
     def _():
         if not input.team1_name():
             return
-        seasons = data_objects['team_seasons'][input.team1_name()]
+        seasons = data_objects['team_seasons'].get(input.team1_name(), [])  # Usar .get() para evitar KeyError
         ui.update_selectize("team1_season", choices=seasons, selected=seasons[0] if seasons else None)
     
     @reactive.Effect
@@ -5482,7 +5502,7 @@ def server(input, output, session):
     def _():
         if not input.team2_name():
             return
-        seasons = data_objects['team_seasons'][input.team2_name()]
+        seasons = data_objects['team_seasons'].get(input.team2_name(), [])  # Usar .get() para evitar KeyError
         ui.update_selectize("team2_season", choices=seasons, selected=seasons[0] if seasons else None)
     
     @reactive.Calc
@@ -5795,17 +5815,17 @@ def server(input, output, session):
     @output
     @render_plotly
     def tsne_plot():
+        df = data_objects['df'].copy()
         team1 = team1_data()
         team2 = team2_data()
         
         fig = px.scatter(
-            data_objects['df'],
+            df,
             x='TSNE_1',
             y='TSNE_2',
             color='cluster_name',
             hover_data=['team_name', 'season_name', 'competition_name'],
-            height=600,
-            color_discrete_sequence=px.colors.qualitative.Pastel
+            height=600
         )
         
         if team1 is not None:
@@ -5813,9 +5833,8 @@ def server(input, output, session):
                 x=[team1['TSNE_1']],
                 y=[team1['TSNE_2']],
                 mode='markers',
-                marker=dict(size=15, color='#dc3545', symbol='star', line=dict(width=2, color='black')),
-                name=f"{team1['team_name']} ({team1['season_name']})",
-                hoverinfo='text'
+                marker=dict(size=15, color='red', symbol='star'),
+                name=f"{team1['team_name']} ({team1['season_name']})"
             ))
         
         if team2 is not None:
@@ -5823,15 +5842,13 @@ def server(input, output, session):
                 x=[team2['TSNE_1']],
                 y=[team2['TSNE_2']],
                 mode='markers',
-                marker=dict(size=15, color='#0d6efd', symbol='star', line=dict(width=2, color='black')),
-                name=f"{team2['team_name']} ({team2['season_name']})",
-                hoverinfo='text'
+                marker=dict(size=15, color='blue', symbol='star'),
+                name=f"{team2['team_name']} ({team2['season_name']})"
             ))
         
         fig.update_layout(
-            legend_title_text='Cluster',
-            showlegend=True,
-            margin=dict(l=20, r=20, t=40, b=167)
+            title="Posición en el Espacio de Clústeres",
+            legend_title_text='Cluster'
         )
         
         return fig
@@ -5842,16 +5859,14 @@ def server(input, output, session):
         centroids = data_objects['kmeans'].cluster_centers_
         selected_metrics = data_objects['selected_columns']
         
+        # Crear DataFrame con los centroides
         centroids_df = pd.DataFrame(
-            centroids, 
-            columns=selected_metrics
+            centroids,
+            columns=selected_metrics,
+            index=[f'Cluster {i}' for i in range(centroids.shape[0])]
         )
-        centroids_df.index = [f'Cluster {i}' for i in range(centroids.shape[0])]
         
-        std_dev = centroids_df.std(axis=0)
-        sorted_cols = std_dev.sort_values(ascending=False).index.tolist()
-        centroids_df = centroids_df[sorted_cols]
-        
+        # Normalizar los valores para mejor visualización
         centroids_normalized = (centroids_df - centroids_df.min()) / (centroids_df.max() - centroids_df.min())
         
         fig = px.imshow(
@@ -5859,13 +5874,11 @@ def server(input, output, session):
             labels=dict(x="Cluster", y="Métrica", color="Valor Normalizado"),
             color_continuous_scale='RdBu',
             aspect="auto",
-            height=500,
-            zmin=0,
-            zmax=1
+            height=500
         )
         
         fig.update_layout(
-            title="Perfil de Clústeres (Valores Normalizados)",
+            title="Características de los Clústeres",
             xaxis_title="Cluster",
             yaxis_title="Métrica"
         )
@@ -5930,7 +5943,7 @@ def server(input, output, session):
         # Hacer que dependa del trigger aunque no lo use directamente
         update_trigger()
         
-        df = datos().copy()
+        df4 = datos().copy()
         df = df[df["playDuration"] >= (4530 * 0.30)]  # Mínimo 30% de minutos
         
         # Solo aplicar similitud si hay equipo seleccionado y el switch está activado
@@ -6291,4 +6304,3 @@ def server(input, output, session):
         use_similarity.set(input.use_similarity_switch())
 
 app = App(app_ui, server)
-run_app(app)
