@@ -70,7 +70,7 @@ url_hoja1 = url_csv(spreadsheet_id, gid_hoja1)
 url_hoja2 = url_csv(spreadsheet_id, gid_hoja2)
 url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
 
-df = pd.read_csv(url_hoja1,low_memory=False)
+df = pd.read_csv(url_hoja1, dtype=dtype_dict, decimal=',')
 df2 = pd.read_csv(url_hoja2,low_memory=False)
 
 def clean_numeric_columns(df):
@@ -84,88 +84,6 @@ def clean_numeric_columns(df):
 df = clean_numeric_columns(df)
 df2 = clean_numeric_columns(df2)
 df3 = clean_numeric_columns(df3)
-
-# Lista completa de columnas
-columns = [
-    'season', 'playerName', 'squadName', 'competitionName', 'birthdate',
-    'birthplace', 'leg', 'positions', 'playDuration',
-    'IMPECT_SCORE_PACKING', 'IMPECT_SCORE_WITHOUT_GOALS_PACKING',
-    'OFFENSIVE_IMPECT_SCORE_PACKING', 'DEFENSIVE_IMPECT_SCORE_PACKING'
-]
-
-# Definir tipos: primeras 8 como string, últimas 5 como float
-dtype_dict = {col: str for col in columns[:-5]}  # columnas string
-dtype_dict.update({col: float for col in columns[-5:]})  # columnas numéricas
-
-# Leer el archivo CSV aplicando los tipos
-df = pd.read_csv(url_hoja1, dtype=dtype_dict, decimal=',')
-columns = [
-    "season", 
-    "playerName", 
-    "squadName", 
-    "competitionName", 
-    "birthdate", 
-    "birthplace", 
-    "leg", 
-    "positions", 
-    "playDuration", 
-    "IMPECT_SCORE_PACKING", 
-    "IMPECT_SCORE_WITHOUT_GOALS_PACKING", 
-    "OFFENSIVE_IMPECT_SCORE_PACKING", 
-    "DEFENSIVE_IMPECT_SCORE_PACKING"]
-
-df = df[[col for col in columns if col in df.columns]]
-df.dtypes
-
-cols_str = [
-    'iterationId', 'competitionName', 'season', 'squadId', 'squadName',
-    'playerId', 'playerName', 'firstname', 'lastname', 'birthdate',
-    'birthplace', 'leg', 'positions', 'iteration'
-]
-# Todas las columnas de df2
-all_columns = [
-    'iterationId', 'competitionName', 'season', 'squadId', 'squadName', 'playerId', 'playerName',
-    'firstname', 'lastname', 'birthdate', 'birthplace', 'leg', 'positions', 'matchShare', 'playDuration',
-    'IMPECT_SCORE_PACKING', 'IMPECT_SCORE_WITHOUT_GOALS_PACKING', 'IMPECT_SCORE_WITH_POSTSHOT_XG_PACKING',
-    'SCORER_SCORE', 'PROGRESSION_SCORE_PACKING', 'OFFENSIVE_IMPECT_SCORE_PACKING',
-    'OFFENSIVE_IMPECT_SCORE_WITHOUT_GOALS_PACKING', 'OFFENSIVE_IMPECT_SCORE_WITH_POSTSHOT_XG_PACKING',
-    'RECEIVING_SCORE_PACKING', 'INTERVENTIONS_SCORE_PACKING', 'DEFENSIVE_POSITIONAL_PLAY_SCORE_PACKING',
-    'DEFENSIVE_IMPECT_SCORE_PACKING', 'ADDED_OPPONENTS_WITHOUT_SHOTS_AT_GOAL', 'RATIO_REMOVED_OPPONENTS',
-    'RATIO_REMOVED_OPPONENTS_DEFENDERS', 'RATIO_ADDED_TEAMMATES', 'RATIO_ADDED_TEAMMATES_DEFENDERS',
-    'DEVIATION_BYPASSED_DEFENDERS', 'SUFFERED_BYPASSED_OPPONENTS', 'DEVIATION_CHANCES', 'RATIO_ADDED_OPPONENTS',
-    'RATIO_REVERSE_PLAY_ADDED_OPPONENTS', 'TOTAL_TOUCHES_IN_PACKING_ZONE_FBR', 'TOTAL_TOUCHES_IN_PACKING_ZONE_CB',
-    'TOTAL_TOUCHES_IN_PACKING_ZONE_FBL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_DM', 'TOTAL_TOUCHES_IN_PACKING_ZONE_WR',
-    'TOTAL_TOUCHES_IN_PACKING_ZONE_WL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_CM', 'TOTAL_TOUCHES_IN_PACKING_ZONE_AM',
-    'TOTAL_TOUCHES_IN_PACKING_ZONE_IBWR', 'TOTAL_TOUCHES_IN_PACKING_ZONE_IBWL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_IB',
-    'LOW_PASS_SCORE', 'LOW_CROSS_SCORE', 'HIGH_CROSS_SCORE', 'DIAGONAL_PASS_SCORE', 'CHIPPED_PASS_SCORE',
-    'SHORT_AERIAL_PASS_SCORE', 'DRIBBLE_SCORE', 'AVAILABILITY_OUT_WIDE_SCORE', 'AVAILABILITY_BTL_SCORE',
-    'AVAILABILITY_FDR_SCORE', 'AVAILABILITY_IN_THE_BOX_SCORE', 'HOLD_UP_PLAY_SCORE', 'OFFENSIVE_HEADER_SCORE',
-    'DEFENSIVE_HEADER_SCORE', 'CLEARANCE_SCORE', 'LOOSE_BALL_REGAIN_SCORE', 'INTERCEPTION_SCORE',
-    'GROUND_DUEL_SCORE', 'BLOCK_SCORE', 'LONG_RANGE_SHOT_SCORE', 'MID_RANGE_SHOT_SCORE',
-    'CLOSE_RANGE_SHOT_SCORE', 'ONE_VS_ONE_AGAINST_GK_SCORE', 'OPEN_GOAL_SHOT_SCORE', 'HEADER_SHOT_SCORE',
-    'THROW_IN_SCORE', 'CORNER_SCORE', 'FREE_KICK_SCORE', 'PENALTY_SCORE', 'GOAL_KICK_SCORE', 'RATIO_AERIAL_DUELS',
-    'AERIAL_DUELS_NUMBER', 'RATIO_GROUND_DUELS', 'RATIO_MINUTES_PER_GOAL', 'RATIO_MINUTES_PER_SHOT_XG',
-    'RATIO_GOALS_SHOT_XG', 'RATIO_SHOTS_ON_TARGET', 'RATIO_SHOTS_PER_GOAL', 'RATIO_MINUTES_PER_ASSIST',
-    'TOTAL_TOUCHES', 'NUMBER_OF_GROUND_DUELS', 'SUCCESSFUL_PASSES_CLEAN', 'UNSUCCESSFUL_PASSES_CLEAN',
-    'RATIO_POSTSHOT_XG_SHOT_XG', 'RATIO_GOALS_POSTSHOT_XG', 'RATIO_PASSING_ACCURACY',
-    'GK_PREVENTED_GOALS_TOTAL_POSTSHOT_XG', 'GK_PREVENTED_GOALS_TOTAL_POSTSHOT_XG_PERCENT',
-    'GK_PREVENTED_GOALS_TOTAL_SHOT_XG', 'GK_PREVENTED_GOALS_TOTAL_SHOT_XG_PERCENT',
-    'GK_DEFENSIVE_TOUCHES_OUTSIDE_OWN_BOX', 'GK_CAUGHT_HIGH_BALLS_PERCENT', 'GK_CAUGHT_AND_PUNCHED_HIGH_BALLS_PERCENT',
-    'GK_SUCCESSFUL_LAUNCHES_PERCENT', 'AERIAL_DUELS_NUMBER_IN_PACKING_ZONE_CB', 'iteration'
-]
-
-dtype_dict = {col: str for col in cols_str}
-dtype_dict.update({col: float for col in all_columns if col not in cols_str})
-df2 = pd.read_csv(
-    url_hoja2,   # tu url para df2
-    dtype=dtype_dict,
-    decimal=',',
-    thousands='.'
-)
-
-
-for col in df3.columns[5:]:
-    df3[col] = df3[col].apply(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
 
 columns = [
     "season", 
@@ -190,7 +108,6 @@ df['playDuration'] = (df['playDuration'] * 4530) / 231093.25
 
 # Opcional: Redondear a 3 decimales (como en el ejemplo)
 df['playDuration'] = df['playDuration'].round(3)
-
 
 REQUIRED_FIELDS = {
     "Nombre": "nuevo_nombre",
