@@ -6396,3 +6396,4 @@ def server(input, output, session):
     def _():
         use_similarity.set(input.use_similarity_switch())
 
+app = App(app_ui, server)
