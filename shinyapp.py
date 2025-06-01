@@ -32,8 +32,6 @@ from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 import plotly.express as px
 import nest_asyncio 
-import gdown
-import openpyxl
 import gspread
 from google.oauth2.service_account import Credentials
 import json
