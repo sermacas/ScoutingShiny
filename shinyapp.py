@@ -70,7 +70,7 @@ url_hoja1 = url_csv(spreadsheet_id, gid_hoja1)
 url_hoja2 = url_csv(spreadsheet_id, gid_hoja2)
 url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
 
-df = pd.read_csv(url_hoja1, dtype=dtype_dict, decimal=',')
+df = pd.read_csv(url_hoja1, low_memory=False)
 df2 = pd.read_csv(url_hoja2,low_memory=False)
 
 def clean_numeric_columns(df):
