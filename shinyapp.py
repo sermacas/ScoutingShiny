@@ -41,7 +41,9 @@ import json
 
 # Obtener SCOPES como lista desde variable de entorno (separados por coma)
 SCOPES = os.getenv("SCOPES")
-
+GOOGLE_API_KEY =  os.getenv("GOOGLE_API_KEY")
+GOOGLE_CX =  os.getenv("GOOGLE_CX")
+YOUTUBE_API_KEY =  os.getenv("YOUTUBE_API_KEY")
 # Obtener el JSON desde variable de entorno y convertirlo a dict
 service_account_info = json.loads(os.getenv("SERVICE_ACCOUNT_JSON"))
 
@@ -54,20 +56,110 @@ credentials = Credentials.from_service_account_info(
 # Autorización y conexión con gspread
 gc = gspread.authorize(credentials)
 
-# ID de spreadsheet y hojas
+
+# Ruta al archivo JSON con credenciales de la cuenta de servicio
+SERVICE_ACCOUNT_FILE = "/Users/sergiomarincastro/Big Data Deportivo/Proyectos/TFG/mi_archivo_credenciales.json"
+
 spreadsheet_id = "1eb2m1nBRo0q5f34H3bBMBXWuwXjkXHsd"
+
 gid_hoja1 = "1098013545"
 gid_hoja2 = "579127624"
 gid_hoja3 = "2005897273"
 
-# Función para obtener la URL CSV
 def url_csv(spreadsheet_id, gid):
     return f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
 
-# Leer los datos como DataFrame
-df = pd.read_csv(url_csv(spreadsheet_id, gid_hoja1))
-df2 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja2))
-df3 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3))
+url_hoja1 = url_csv(spreadsheet_id, gid_hoja1)
+url_hoja2 = url_csv(spreadsheet_id, gid_hoja2)
+url_hoja3 = url_csv(spreadsheet_id, gid_hoja3)
+
+df = pd.read_csv(url_hoja1,low_memory=False)
+df2 = pd.read_csv(url_hoja2,low_memory=False)
+df3 = pd.read_csv(url_hoja3,low_memory=False)
+
+import pandas as pd
+
+# Lista completa de columnas
+columns = [
+    'season', 'playerName', 'squadName', 'competitionName', 'birthdate',
+    'birthplace', 'leg', 'positions', 'playDuration',
+    'IMPECT_SCORE_PACKING', 'IMPECT_SCORE_WITHOUT_GOALS_PACKING',
+    'OFFENSIVE_IMPECT_SCORE_PACKING', 'DEFENSIVE_IMPECT_SCORE_PACKING'
+]
+
+# Definir tipos: primeras 8 como string, últimas 5 como float
+dtype_dict = {col: str for col in columns[:-5]}  # columnas string
+dtype_dict.update({col: float for col in columns[-5:]})  # columnas numéricas
+
+# Leer el archivo CSV aplicando los tipos
+df = pd.read_csv(url_hoja1, dtype=dtype_dict, decimal=',')
+columns = [
+    "season", 
+    "playerName", 
+    "squadName", 
+    "competitionName", 
+    "birthdate", 
+    "birthplace", 
+    "leg", 
+    "positions", 
+    "playDuration", 
+    "IMPECT_SCORE_PACKING", 
+    "IMPECT_SCORE_WITHOUT_GOALS_PACKING", 
+    "OFFENSIVE_IMPECT_SCORE_PACKING", 
+    "DEFENSIVE_IMPECT_SCORE_PACKING"]
+
+df = df[[col for col in columns if col in df.columns]]
+df.dtypes
+
+cols_str = [
+    'iterationId', 'competitionName', 'season', 'squadId', 'squadName',
+    'playerId', 'playerName', 'firstname', 'lastname', 'birthdate',
+    'birthplace', 'leg', 'positions', 'iteration'
+]
+# Todas las columnas de df2
+all_columns = [
+    'iterationId', 'competitionName', 'season', 'squadId', 'squadName', 'playerId', 'playerName',
+    'firstname', 'lastname', 'birthdate', 'birthplace', 'leg', 'positions', 'matchShare', 'playDuration',
+    'IMPECT_SCORE_PACKING', 'IMPECT_SCORE_WITHOUT_GOALS_PACKING', 'IMPECT_SCORE_WITH_POSTSHOT_XG_PACKING',
+    'SCORER_SCORE', 'PROGRESSION_SCORE_PACKING', 'OFFENSIVE_IMPECT_SCORE_PACKING',
+    'OFFENSIVE_IMPECT_SCORE_WITHOUT_GOALS_PACKING', 'OFFENSIVE_IMPECT_SCORE_WITH_POSTSHOT_XG_PACKING',
+    'RECEIVING_SCORE_PACKING', 'INTERVENTIONS_SCORE_PACKING', 'DEFENSIVE_POSITIONAL_PLAY_SCORE_PACKING',
+    'DEFENSIVE_IMPECT_SCORE_PACKING', 'ADDED_OPPONENTS_WITHOUT_SHOTS_AT_GOAL', 'RATIO_REMOVED_OPPONENTS',
+    'RATIO_REMOVED_OPPONENTS_DEFENDERS', 'RATIO_ADDED_TEAMMATES', 'RATIO_ADDED_TEAMMATES_DEFENDERS',
+    'DEVIATION_BYPASSED_DEFENDERS', 'SUFFERED_BYPASSED_OPPONENTS', 'DEVIATION_CHANCES', 'RATIO_ADDED_OPPONENTS',
+    'RATIO_REVERSE_PLAY_ADDED_OPPONENTS', 'TOTAL_TOUCHES_IN_PACKING_ZONE_FBR', 'TOTAL_TOUCHES_IN_PACKING_ZONE_CB',
+    'TOTAL_TOUCHES_IN_PACKING_ZONE_FBL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_DM', 'TOTAL_TOUCHES_IN_PACKING_ZONE_WR',
+    'TOTAL_TOUCHES_IN_PACKING_ZONE_WL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_CM', 'TOTAL_TOUCHES_IN_PACKING_ZONE_AM',
+    'TOTAL_TOUCHES_IN_PACKING_ZONE_IBWR', 'TOTAL_TOUCHES_IN_PACKING_ZONE_IBWL', 'TOTAL_TOUCHES_IN_PACKING_ZONE_IB',
+    'LOW_PASS_SCORE', 'LOW_CROSS_SCORE', 'HIGH_CROSS_SCORE', 'DIAGONAL_PASS_SCORE', 'CHIPPED_PASS_SCORE',
+    'SHORT_AERIAL_PASS_SCORE', 'DRIBBLE_SCORE', 'AVAILABILITY_OUT_WIDE_SCORE', 'AVAILABILITY_BTL_SCORE',
+    'AVAILABILITY_FDR_SCORE', 'AVAILABILITY_IN_THE_BOX_SCORE', 'HOLD_UP_PLAY_SCORE', 'OFFENSIVE_HEADER_SCORE',
+    'DEFENSIVE_HEADER_SCORE', 'CLEARANCE_SCORE', 'LOOSE_BALL_REGAIN_SCORE', 'INTERCEPTION_SCORE',
+    'GROUND_DUEL_SCORE', 'BLOCK_SCORE', 'LONG_RANGE_SHOT_SCORE', 'MID_RANGE_SHOT_SCORE',
+    'CLOSE_RANGE_SHOT_SCORE', 'ONE_VS_ONE_AGAINST_GK_SCORE', 'OPEN_GOAL_SHOT_SCORE', 'HEADER_SHOT_SCORE',
+    'THROW_IN_SCORE', 'CORNER_SCORE', 'FREE_KICK_SCORE', 'PENALTY_SCORE', 'GOAL_KICK_SCORE', 'RATIO_AERIAL_DUELS',
+    'AERIAL_DUELS_NUMBER', 'RATIO_GROUND_DUELS', 'RATIO_MINUTES_PER_GOAL', 'RATIO_MINUTES_PER_SHOT_XG',
+    'RATIO_GOALS_SHOT_XG', 'RATIO_SHOTS_ON_TARGET', 'RATIO_SHOTS_PER_GOAL', 'RATIO_MINUTES_PER_ASSIST',
+    'TOTAL_TOUCHES', 'NUMBER_OF_GROUND_DUELS', 'SUCCESSFUL_PASSES_CLEAN', 'UNSUCCESSFUL_PASSES_CLEAN',
+    'RATIO_POSTSHOT_XG_SHOT_XG', 'RATIO_GOALS_POSTSHOT_XG', 'RATIO_PASSING_ACCURACY',
+    'GK_PREVENTED_GOALS_TOTAL_POSTSHOT_XG', 'GK_PREVENTED_GOALS_TOTAL_POSTSHOT_XG_PERCENT',
+    'GK_PREVENTED_GOALS_TOTAL_SHOT_XG', 'GK_PREVENTED_GOALS_TOTAL_SHOT_XG_PERCENT',
+    'GK_DEFENSIVE_TOUCHES_OUTSIDE_OWN_BOX', 'GK_CAUGHT_HIGH_BALLS_PERCENT', 'GK_CAUGHT_AND_PUNCHED_HIGH_BALLS_PERCENT',
+    'GK_SUCCESSFUL_LAUNCHES_PERCENT', 'AERIAL_DUELS_NUMBER_IN_PACKING_ZONE_CB', 'iteration'
+]
+
+dtype_dict = {col: str for col in cols_str}
+dtype_dict.update({col: float for col in all_columns if col not in cols_str})
+df2 = pd.read_csv(
+    url_hoja2,   # tu url para df2
+    dtype=dtype_dict,
+    decimal=',',
+    thousands='.'
+)
+
+
+df3.iloc[:, 5:] = df3.iloc[:, 5:].applymap(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
+
 columns = [
     "season", 
     "playerName", 
@@ -85,7 +177,7 @@ columns = [
 
 df = df[[col for col in columns if col in df.columns]]
 
-df['playDuration'] = pd.to_numeric(df['playDuration'], errors='coerce')
+
 # Asumiendo que ya tienes un DataFrame llamado 'df'
 df['playDuration'] = (df['playDuration'] * 4530) / 231093.25
 
@@ -93,9 +185,6 @@ df['playDuration'] = (df['playDuration'] * 4530) / 231093.25
 df['playDuration'] = df['playDuration'].round(3)
 
 
-# ======================
-# CONSTANTES Y CONFIGURACIÓN
-# ======================
 REQUIRED_FIELDS = {
     "Nombre": "nuevo_nombre",
     "Competición": "nuevo_competencia",
@@ -103,11 +192,6 @@ REQUIRED_FIELDS = {
     "Pierna hábil": "nuevo_leg",
     "Fecha de nacimiento": "nuevo_birthdate"
 }
-
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-GOOGLE_CX = os.getenv("GOOGLE_CX")
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-
 # ======================
 # FUNCIONES DE TRANSFERMARKT
 # ======================
@@ -681,7 +765,7 @@ def create_nationality_component(nationalities_str):
         ) for flag in flags],
         class_name="d-flex flex-wrap align-items-center"
     )
-
+    
 def info_card(title, icon, content=None, color="primary"):
     """Función auxiliar para crear tarjetas de información"""
     return ui.div(
@@ -693,6 +777,7 @@ def info_card(title, icon, content=None, color="primary"):
         class_=f"card border-{color} mb-3"
     )
     
+
 class PDF(FPDF):
     def header(self):
         self.set_font('Arial', 'B', 16)
@@ -1430,9 +1515,10 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
     )
     return fig
 
+
 # Cargar y preparar datos
 def load_data():
-    df4 = pd.read_csv(url_csv(spreadsheet_id, gid_hoja3))
+    df4 = pd.read_csv(url_hoja3,low_memory=False)
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
@@ -1452,9 +1538,8 @@ def load_data():
     ]
     
     df_selected = df4[selected_columns]
-    # Convert all columns in df_selected to numeric, replacing commas
-    df_selected = df_selected.applymap(lambda x: str(x).replace(',', '.') if isinstance(x, str) else x)
-    df_selected = df_selected.apply(pd.to_numeric, errors='coerce')  # Convert strings to float, NaN if not possible
+    # Convertir comas decimales a puntos y asegurar tipo float
+    df_selected = df_selected.replace(',', '.', regex=True).astype(float)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(df_selected)
     
@@ -5505,8 +5590,9 @@ def server(input, output, session):
             ui.tags.p(f"Cluster: {team_data['cluster_name']}", class_="card-text"),
             ui.tags.hr(),
             ui.tags.h5("Métricas clave:", class_="mt-3"),
-            *[ui.tags.p(f"{metric}: {team_data[metric]:.2f}", class_="card-text small") 
-              for metric in data_objects['selected_columns']]
+            *[ui.tags.p(f"{metric}: {float(team_data[metric]):.2f}" if isinstance(team_data[metric], (int, float)) else f"{metric}: {team_data[metric]}", 
+                    class_="card-text small") 
+            for metric in data_objects['selected_columns']]
         )
     
     @output
@@ -5524,37 +5610,42 @@ def server(input, output, session):
             ui.tags.p(f"Cluster: {team_data['cluster_name']}", class_="card-text"),
             ui.tags.hr(),
             ui.tags.h5("Métricas clave:", class_="mt-3"),
-            *[ui.tags.p(f"{metric}: {team_data[metric]:.2f}", class_="card-text small") 
+            *[ui.tags.p(f"{metric}: {team_data[metric]:.2f}"if isinstance(team_data[metric], (int, float)) else f"{metric}: {team_data[metric]}", 
+                        class_="card-text small") 
               for metric in data_objects['selected_columns']]
         )
 
     
-    # Función para encontrar equipos similares (siempre 10)
     def find_similar_teams(team_name, season_name):
         base_values = get_scaled_values(team_name, season_name)
         if base_values is None:
             return pd.DataFrame()
-        
-        # Obtener todos los otros equipos
+
+        # Filtrar los otros equipos
         other_teams = data_objects['df'][
             ~((data_objects['df']['team_name'] == team_name) & 
-              (data_objects['df']['season_name'] == season_name))
+            (data_objects['df']['season_name'] == season_name))
         ]
         
         if len(other_teams) == 0:
             return pd.DataFrame()
         
-        # Escalar los datos de los otros equipos
-        other_values = data_objects['scaler'].transform(other_teams[data_objects['selected_columns']])
-        
-        # Calcular similitud coseno
+        # Extraer y limpiar columnas seleccionadas
+        other_df = other_teams[data_objects['selected_columns']].copy()
+        other_df = other_df.replace(',', '.', regex=True).astype(float)
+
+        # Escalar
+        other_values = data_objects['scaler'].transform(other_df)
+
+        # Calcular similitudes
         similarities = cosine_similarity(base_values, other_values)[0]
-        
-        # Crear DataFrame con resultados
+
+        # Preparar resultado
         similar_teams = other_teams.copy()
         similar_teams['similarity'] = similarities
-        
+
         return similar_teams.sort_values('similarity', ascending=False).head(10)
+
     
     @output
     @render.ui
@@ -5652,7 +5743,7 @@ def server(input, output, session):
         
         return f"Similitud coseno: {similarity_percent}% ({interpretation}){cluster_info}"
     
-   # Modificar la función del radar chart en el servidor
+    
     @output
     @render_plotly
     def radar_chart2():
@@ -5666,33 +5757,46 @@ def server(input, output, session):
                 height=450
             ))
         
-        # Definir qué métricas son "menos es mejor"
-        less_is_better = ['UNSUCCESSFUL_PASSES', 'CRITICAL_BALL_LOSS_NUMBER', 'OPPONENT_GOALS']
+        # Ensure we're working with a copy of the dataframe
+        df = data_objects['df'].copy()
         
-        # Normalizar los datos para el radar chart (0-1 scaling)
-        df_selected = data_objects['df'][metrics]
+        # Convert all metric columns to numeric, handling comma decimals
+        for metric in metrics:
+            if df[metric].dtype == object:
+                df[metric] = df[metric].str.replace(',', '.').astype(float)
+        
+        # Get the selected data (now properly numeric)
+        df_selected = df[metrics]
+        
+        # Calculate min, max and range
         min_vals = df_selected.min()
         max_vals = df_selected.max()
         range_vals = max_vals - min_vals
         
-        # Evitar división por cero
+        # Handle case where range is 0 (avoid division by zero)
         range_vals[range_vals == 0] = 1
         
-        # Normalizar los datos, invirtiendo las métricas donde "menos es mejor"
-        team1_normalized = pd.Series(index=metrics, dtype=float)
-        team2_normalized = pd.Series(index=metrics, dtype=float)
+        # Define which metrics are "less is better"
+        less_is_better = ['UNSUCCESSFUL_PASSES', 'CRITICAL_BALL_LOSS_NUMBER', 'OPPONENT_GOALS']
         
-        for metric in metrics:
-            if metric in less_is_better:
-                # Para métricas donde menos es mejor, invertimos la normalización
-                team1_normalized[metric] = 1 - (team1[metric] - min_vals[metric]) / range_vals[metric]
-                team2_normalized[metric] = 1 - (team2[metric] - min_vals[metric]) / range_vals[metric]
-            else:
-                # Para métricas donde más es mejor, normalización estándar
-                team1_normalized[metric] = (team1[metric] - min_vals[metric]) / range_vals[metric]
-                team2_normalized[metric] = (team2[metric] - min_vals[metric]) / range_vals[metric]
+        # Normalize the team data
+        def normalize_team_data(team_row):
+            normalized = {}
+            for metric in metrics:
+                value = float(team_row[metric].replace(',', '.')) if isinstance(team_row[metric], str) else float(team_row[metric])
+                if metric in less_is_better:
+                    # Invert for "less is better" metrics
+                    normalized[metric] = 1 - (value - min_vals[metric]) / range_vals[metric]
+                else:
+                    # Standard normalization
+                    normalized[metric] = (value - min_vals[metric]) / range_vals[metric]
+            return normalized
         
-        # Crear nombres de métricas más legibles
+        # Normalize both teams' data
+        team1_normalized = normalize_team_data(team1)
+        team2_normalized = normalize_team_data(team2)
+        
+        # Create readable metric names
         metric_names = {
             'GOALS': 'Goles',
             'SUCCESSFUL_PASSES': 'Pases exitosos',
@@ -5705,11 +5809,12 @@ def server(input, output, session):
         
         theta = [metric_names.get(m, m) for m in metrics]
         
+        # Create the plot
         fig = go.Figure()
         
-        # Equipo 1
+        # Team 1 trace
         fig.add_trace(go.Scatterpolar(
-            r=team1_normalized.values,
+            r=[team1_normalized[m] for m in metrics],
             theta=theta,
             fill='toself',
             name=f"{team1['team_name']} ({team1['season_name']})",
@@ -5717,9 +5822,9 @@ def server(input, output, session):
             opacity=0.8
         ))
         
-        # Equipo 2
+        # Team 2 trace
         fig.add_trace(go.Scatterpolar(
-            r=team2_normalized.values,
+            r=[team2_normalized[m] for m in metrics],
             theta=theta,
             fill='toself',
             name=f"{team2['team_name']} ({team2['season_name']})",
@@ -5833,23 +5938,25 @@ def server(input, output, session):
         
         return fig
     
-     # Función para obtener los valores escalados de un equipo
     def get_scaled_values(identifier, season_name=None, is_team=True):
-        """Obtiene valores escalados para un equipo o jugador"""
         try:
             if 'df' not in data_objects or 'scaler' not in data_objects or 'selected_columns' not in data_objects:
-                print("Error: Datos o scaler no inicializados")
+                print("Error: Data or scaler not initialized")
                 return None
                 
-            df = data_objects['df']
+            # Work with a copy to avoid modifying original data
+            df = data_objects['df'].copy()
+            
+            # Convert numeric columns
+            for col in data_objects['selected_columns']:
+                if df[col].dtype == object:
+                    df[col] = df[col].str.replace(',', '.').astype(float)
             
             if is_team:
-                # Filtrar por equipo y temporada (si se especifica)
                 filter_condition = (df['team_name'] == identifier)
                 if season_name:
                     filter_condition &= (df['season_name'] == season_name)
             else:
-                # Filtrar por jugador
                 filter_condition = (df['playerName'] == identifier)
                 if season_name:
                     filter_condition &= (df['season_name'] == season_name)
@@ -5857,16 +5964,17 @@ def server(input, output, session):
             data = df[filter_condition]
             
             if len(data) != 1:
-                print(f"Error: Se encontraron {len(data)} registros para {identifier}")
+                print(f"Error: Found {len(data)} records for {identifier}")
                 return None
             
-            values = data[data_objects['selected_columns']].values
+            # Get values in correct order and ensure numeric
+            values = data[data_objects['selected_columns']].values.astype(float)
             scaled_values = data_objects['scaler'].transform(values)
             
             return scaled_values
                 
         except Exception as e:
-            print(f"Error en get_scaled_values: {str(e)}")
+            print(f"Error in get_scaled_values: {str(e)}")
             return None
 
 # --------------   --------------  --------------  --------------  --------------  --------------  --------------  --------------
@@ -6247,5 +6355,7 @@ def server(input, output, session):
     @reactive.event(input.use_similarity_switch)
     def _():
         use_similarity.set(input.use_similarity_switch())
-
+# ======================
+# EJECUCIÓN DE LA APLICACIÓN
+# ======================
 app = App(app_ui, server)
