@@ -83,7 +83,6 @@ def clean_numeric_columns(df):
 
 df = clean_numeric_columns(df)
 df2 = clean_numeric_columns(df2)
-df3 = clean_numeric_columns(df3)
 
 columns = [
     "season", 
