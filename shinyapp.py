@@ -168,7 +168,8 @@ df2 = pd.read_csv(
 )
 
 
-df3.iloc[:, 5:] = df3.iloc[:, 5:].applymap(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
+for col in df3.columns[5:]:
+    df3[col] = df3[col].apply(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
 
 columns = [
     "season", 
