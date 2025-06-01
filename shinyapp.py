@@ -6051,30 +6051,31 @@ def server(input, output, session):
         try:
             if 'df' not in data_objects or 'scaler' not in data_objects or 'selected_columns' not in data_objects:
                 return None
-                
+    
             df = data_objects['df']
-            
+    
             # Verificar si el equipo existe en df4
             if team_name not in df['team_name'].unique():
                 return None
-                
+    
             team_data = df[df['team_name'] == team_name]
-            
+    
             if team_data.empty:
                 return None
-            
-            # Promedio de todas las temporadas del equipo
-            avg_values = team_data[data_objects['selected_columns']].mean().values.reshape(1, -1)
-            
-            # Convertir a DataFrame con nombres de columnas para evitar el warning
+    
+            # Convertir columnas numéricas correctamente
+            team_numeric = team_data[data_objects['selected_columns']].replace(',', '.', regex=True).astype(float)
+            avg_values = team_numeric.mean().values.reshape(1, -1)
+    
             avg_df = pd.DataFrame(avg_values, columns=data_objects['selected_columns'])
             scaled_values = data_objects['scaler'].transform(avg_df)
-            
+    
             return scaled_values
         except Exception as e:
             print(f"Error en get_team_scaled_values: {str(e)}")
             return None
 
+    
     @reactive.Calc
     def reference_team():
         return input.selected_team()
