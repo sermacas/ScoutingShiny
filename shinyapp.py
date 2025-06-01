@@ -11,7 +11,6 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 import tempfile
-import nest_asyncio 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
