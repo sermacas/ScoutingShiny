@@ -1519,6 +1519,7 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
 # Cargar y preparar datos
 def load_data():
     df4 = pd.read_csv(url_hoja3,low_memory=False)
+    df4.iloc[:, 5:] = df4.iloc[:, 5:].applymap(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
