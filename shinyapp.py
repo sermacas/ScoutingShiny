@@ -1321,32 +1321,42 @@ def generar_pdf_entrenador(coach_info, club_history, achievements, filename="inf
     pdf.output(filename)
     return filename
 
+def parse_to_mean(value):
+    """Convierte strings de números separados por comas a float promedio"""
+    try:
+        if isinstance(value, str) and ',' in value:
+            numbers = [float(x.strip()) for x in value.split(',')]
+            return sum(numbers) / len(numbers)
+        return float(value)
+    except Exception:
+        return None
+
 def get_player_impect_scores(player_name):
-    """Obtiene los scores de impacto del jugador desde df2"""
+    """Obtiene los scores de impect del jugador desde df2"""
     if not player_name:
         return None
         
-    player_data = df2[df2['playerName'] == player_name]
+    player_data = df2[df2['playerName'] == player_name].copy()
     if player_data.empty:
         return None
-    
-    # Seleccionar y formatear las columnas relevantes
-    scores = {
-        'IMPECT_SCORE_PACKING': player_data['IMPECT_SCORE_PACKING'].mean(),
-        'IMPECT_SCORE_WITHOUT_GOALS_PACKING': player_data['IMPECT_SCORE_WITHOUT_GOALS_PACKING'].mean(),
-        'OFFENSIVE_IMPECT_SCORE_PACKING': player_data['OFFENSIVE_IMPECT_SCORE_PACKING'].mean(),
-        'DEFENSIVE_IMPECT_SCORE_PACKING': player_data['DEFENSIVE_IMPECT_SCORE_PACKING'].mean()
-    }
+
+    # Limpiar y convertir las columnas necesarias
+    columns = [
+        'IMPECT_SCORE_PACKING',
+        'IMPECT_SCORE_WITHOUT_GOALS_PACKING',
+        'OFFENSIVE_IMPECT_SCORE_PACKING',
+        'DEFENSIVE_IMPECT_SCORE_PACKING'
+    ]
+
+    for col in columns:
+        player_data[col] = player_data[col].apply(parse_to_mean)
+
+    # Calcular los promedios
+    scores = {col: player_data[col].mean() for col in columns}
     
     # Redondear valores
     return {k: round(v, 2) for k, v in scores.items() if not pd.isna(v)}
 
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-from shiny import App, ui, reactive, render
-from shinywidgets import output_widget, render_widget
-from shiny.ui import div, h3, hr, br
 
 # --- Definiciones de Features y Grupos ---
 general_features = [
@@ -1519,7 +1529,6 @@ def generate_radar_plot(df_orig: pd.DataFrame, player_name: str, selected_group_
 # Cargar y preparar datos
 def load_data():
     df4 = pd.read_csv(url_hoja3,low_memory=False)
-    df4.iloc[:, 5:] = df4.iloc[:, 5:].applymap(lambda x: float(str(x).replace(',', '.')) if pd.notnull(x) else pd.NA).astype('Float64')
 
     columns_to_keep = [
         'season_name', 'competition_name', 'team_name', 'team_season_matches',
@@ -6052,31 +6061,30 @@ def server(input, output, session):
         try:
             if 'df' not in data_objects or 'scaler' not in data_objects or 'selected_columns' not in data_objects:
                 return None
-    
+                
             df = data_objects['df']
-    
+            
             # Verificar si el equipo existe en df4
             if team_name not in df['team_name'].unique():
                 return None
-    
+                
             team_data = df[df['team_name'] == team_name]
-    
+            
             if team_data.empty:
                 return None
-    
-            # Convertir columnas numéricas correctamente
-            team_numeric = team_data[data_objects['selected_columns']].replace(',', '.', regex=True).astype(float)
-            avg_values = team_numeric.mean().values.reshape(1, -1)
-    
+            
+            # Promedio de todas las temporadas del equipo
+            avg_values = team_data[data_objects['selected_columns']].mean().values.reshape(1, -1)
+            
+            # Convertir a DataFrame con nombres de columnas para evitar el warning
             avg_df = pd.DataFrame(avg_values, columns=data_objects['selected_columns'])
             scaled_values = data_objects['scaler'].transform(avg_df)
-    
+            
             return scaled_values
         except Exception as e:
             print(f"Error en get_team_scaled_values: {str(e)}")
             return None
 
-    
     @reactive.Calc
     def reference_team():
         return input.selected_team()
