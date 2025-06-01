@@ -77,7 +77,17 @@ df = pd.read_csv(url_hoja1,low_memory=False)
 df2 = pd.read_csv(url_hoja2,low_memory=False)
 df3 = pd.read_csv(url_hoja3,low_memory=False)
 
-import pandas as pd
+def clean_numeric_columns(df):
+    for col in df.select_dtypes(include=['object']).columns:
+        try:
+            df[col] = df[col].str.replace(',', '.').astype(float)
+        except (ValueError, AttributeError):
+            pass
+    return df
+
+df = clean_numeric_columns(df)
+df2 = clean_numeric_columns(df2)
+df3 = clean_numeric_columns(df3)
 
 # Lista completa de columnas
 columns = [
@@ -1404,6 +1414,10 @@ group_colors = {
 
 # --- Funciones de Ayuda y Gráfico ---
 def normalize_percentile(col: pd.Series) -> pd.Series:
+    
+    if col.dtype == object:
+        col = col.str.replace(',', '.').astype(float)
+        
     if col.nunique() <= 1:
         return pd.Series([0.5] * len(col), index=col.index, name=col.name)
     p10 = np.percentile(col.dropna(), 10)
