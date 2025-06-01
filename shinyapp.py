@@ -1498,19 +1498,25 @@ def load_data():
         'CRITICAL_BALL_LOSS_NUMBER', 'OPPONENT_GOALS'
     ]
     
-    df_selected = df4[selected_columns]
-    # Convertir comas decimales a puntos y asegurar tipo float
-    df_selected = df_selected.replace(',', '.', regex=True).astype(float)
+    # Asegurar que las columnas sean numéricas
+    df_selected = df4[selected_columns].copy()
+    
+    # Escalado con nombres de características
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(df_selected)
     
+    # Convertir a DataFrame para mantener nombres
+    X_scaled_df = pd.DataFrame(X_scaled, columns=selected_columns, index=df_selected.index)
+    
+    # Clustering
     kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
-    clusters = kmeans.fit_predict(X_scaled)
+    clusters = kmeans.fit_predict(X_scaled_df)
     df4['cluster'] = clusters
     df4['cluster_name'] = 'Cluster ' + df4['cluster'].astype(str)
     
-    tsne = TSNE(n_components=2, random_state=42, perplexity=30)
-    X_tsne = tsne.fit_transform(X_scaled)
+    # t-SNE
+    tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X_scaled_df)-1))
+    X_tsne = tsne.fit_transform(X_scaled_df)
     df4['TSNE_1'] = X_tsne[:, 0]
     df4['TSNE_2'] = X_tsne[:, 1]
     
@@ -1525,11 +1531,11 @@ def load_data():
         'scaler': scaler,
         'kmeans': kmeans,
         'selected_columns': selected_columns,
-        'X_scaled': X_scaled,
+        'X_scaled': X_scaled_df,
         'team_seasons': team_seasons,
         'unique_teams': unique_teams
     }
-
+    
 data_objects = load_data()
 # ======================
 # INTERFAZ DE USUARIO (UI)
@@ -2106,21 +2112,28 @@ def cretate_similar_tab():
                             ui.sidebar(
                                 ui.h4("Parámetros de Comparación", class_="card-title"),
                                 ui.input_selectize(
-                                "team1_name", "Equipo 1",
-                                choices=data_objects['unique_teams'],  # Inicializado con los equipos disponibles
-                                selected=None),
-                                ui.input_selectize(
-                                    "team1_season", "Temporada",
-                                    choices=[]
+                                    "team1_name", 
+                                    "Equipo 1",
+                                    choices=data_objects['unique_teams'],
+                                    selected=data_objects['unique_teams'][0] if data_objects['unique_teams'] else None
                                 ),
                                 ui.input_selectize(
-                                "team2_name", "Equipo 2",
-                                choices=data_objects['unique_teams'],  # Inicializado con los equipos disponibles
-                                selected=None
+                                    "team1_season", 
+                                    "Temporada",
+                                    choices=[],
+                                    selected=None
                                 ),
                                 ui.input_selectize(
-                                    "team2_season", "Temporada",
-                                    choices=[]
+                                    "team2_name", 
+                                    "Equipo 2",
+                                    choices=data_objects['unique_teams'],
+                                    selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
+                                ),
+                                ui.input_selectize(
+                                    "team2_season", 
+                                    "Temporada",
+                                    choices=[],
+                                    selected=None
                                 ),
                                 width=300
                             ),
@@ -2131,32 +2144,32 @@ def cretate_similar_tab():
                                         ui.card(
                                             ui.card_header("Perfil del Equipo 1"),
                                             ui.output_ui("team1_card"),
-                                            class_="team-profile team1-profile"
+                                            class_="team-profile team1-profile",
+                                            height="100%"
                                         ),
                                         ui.card(
                                             ui.card_header("Perfil del Equipo 2"),
                                             ui.output_ui("team2_card"),
-                                            class_="team-profile team2-profile"
+                                            class_="team-profile team2-profile",
+                                            height="100%"
                                         ),
-                                        col_widths=(6, 6)
+                                        col_widths=(6, 6),
+                                        height="400px"
                                     ),
                                     ui.card(
-                                        ui.card_header("Análisis de Similitud (Distancia Coseno)"),
+                                        ui.card_header("Análisis de Similitud"),
                                         ui.output_text("similarity_score"),
                                         class_="text-center py-3 bg-light"
                                     ),
-                                    ui.layout_columns(
-                                        ui.card(
-                                            ui.card_header("Comparación Radar"),
-                                            ui.output_plot("radar_chart2"),  # Changed from output_widget
-                                            class_="radar-container"
-                                        ),
-                                        col_widths=12
+                                    ui.card(
+                                        ui.card_header("Comparación Radar"),
+                                        output_widget("radar_chart2"),
+                                        class_="plot-container"
                                     ),
                                     ui.card(
                                         ui.card_header("Posición en el Espacio de Clústeres"),
-                                        ui.output_plot("tsne_plot"),  # Changed from output_widget
-                                        class_="cluster-plot-container"
+                                        output_widget("tsne_plot"),
+                                        class_="plot-container"
                                     )
                                 ),
                                 ui.nav_panel(
@@ -2176,18 +2189,15 @@ def cretate_similar_tab():
                                     ),
                                     ui.card(
                                         ui.card_header("Características de los Clústeres"),
-                                        ui.output_plot("cluster_heatmap"),  # Changed from output_widget
-                                        height="500px"
+                                        output_widget("cluster_heatmap"),
+                                        class_="plot-container"
                                     )
                                 )
                             )
                         ),
                         class_="main-container"
                     )
-                )
-            )
-        )
-    )
+                ))))
     
 def create_table_filters():
     """Crea los controles de filtrado para la tabla"""
@@ -3007,7 +3017,7 @@ app_ui = ui.page_fluid(
 # LÓGICA DEL SERVIDOR
 # ======================
 def server(input, output, session):
-    
+
     
     # Estado reactivo para Transfermarkt
     tm_results = reactive.Value([])
@@ -5493,17 +5503,23 @@ def server(input, output, session):
     @reactive.event(input.team1_name)
     def _():
         if not input.team1_name():
+            ui.update_selectize("team1_season", choices=[], selected=None)
             return
-        seasons = data_objects['team_seasons'].get(input.team1_name(), [])  # Usar .get() para evitar KeyError
-        ui.update_selectize("team1_season", choices=seasons, selected=seasons[0] if seasons else None)
+        
+        seasons = data_objects['team_seasons'].get(input.team1_name(), [])
+        ui.update_selectize("team1_season", 
+                        choices=seasons, 
+                        selected=seasons[0] if seasons else None)
     
     @reactive.Effect
     @reactive.event(input.team2_name)
     def _():
         if not input.team2_name():
             return
-        seasons = data_objects['team_seasons'].get(input.team2_name(), [])  # Usar .get() para evitar KeyError
-        ui.update_selectize("team2_season", choices=seasons, selected=seasons[0] if seasons else None)
+        seasons = data_objects['team_seasons'].get(input.team2_name(), []) 
+        ui.update_selectize("team2_season", 
+                        choices=seasons, 
+                        selected=seasons[0] if seasons else None)
     
     @reactive.Calc
     def team1_data():
@@ -5698,228 +5714,208 @@ def server(input, output, session):
         return f"Similitud coseno: {similarity_percent}% ({interpretation}){cluster_info}"
     
     
+    # 3. Mejorar los gráficos
     @output
     @render_plotly
     def radar_chart2():
-        team1 = team1_data()
-        team2 = team2_data()
-        metrics = data_objects['selected_columns']
-        
-        if team1 is None or team2 is None:
-            return go.Figure(layout=dict(
-                title="Seleccione ambos equipos para comparar",
-                height=450
-            ))
-        
-        # Ensure we're working with a copy of the dataframe
-        df = data_objects['df'].copy()
-        
-        # Convert all metric columns to numeric, handling comma decimals
-        for metric in metrics:
-            if df[metric].dtype == object:
-                df[metric] = df[metric].str.replace(',', '.').astype(float)
-        
-        # Get the selected data (now properly numeric)
-        df_selected = df[metrics]
-        
-        # Calculate min, max and range
-        min_vals = df_selected.min()
-        max_vals = df_selected.max()
-        range_vals = max_vals - min_vals
-        
-        # Handle case where range is 0 (avoid division by zero)
-        range_vals[range_vals == 0] = 1
-        
-        # Define which metrics are "less is better"
-        less_is_better = ['UNSUCCESSFUL_PASSES', 'CRITICAL_BALL_LOSS_NUMBER', 'OPPONENT_GOALS']
-        
-        # Normalize the team data
-        def normalize_team_data(team_row):
-            normalized = {}
+        try:
+            team1 = team1_data()
+            team2 = team2_data()
+            
+            if team1 is None or team2 is None:
+                return go.Figure(layout={
+                    'title': 'Seleccione ambos equipos para comparar',
+                    'height': 400
+                })
+            
+            metrics = data_objects['selected_columns']
+            df = data_objects['df'].copy()
+            
+            # Asegurar que las métricas son numéricas
             for metric in metrics:
-                value = float(team_row[metric].replace(',', '.')) if isinstance(team_row[metric], str) else float(team_row[metric])
-                if metric in less_is_better:
-                    # Invert for "less is better" metrics
-                    normalized[metric] = 1 - (value - min_vals[metric]) / range_vals[metric]
-                else:
-                    # Standard normalization
-                    normalized[metric] = (value - min_vals[metric]) / range_vals[metric]
-            return normalized
-        
-        # Normalize both teams' data
-        team1_normalized = normalize_team_data(team1)
-        team2_normalized = normalize_team_data(team2)
-        
-        # Create readable metric names
-        metric_names = {
-            'GOALS': 'Goles',
-            'SUCCESSFUL_PASSES': 'Pases exitosos',
-            'BALL_WIN_NUMBER': 'Recuperaciones',
-            'BYPASSED_OPPONENTS': 'Rivales superados',
-            'UNSUCCESSFUL_PASSES': 'Pases fallidos (↓)',
-            'CRITICAL_BALL_LOSS_NUMBER': 'Pérdidas críticas (↓)',
-            'OPPONENT_GOALS': 'Goles recibidos (↓)'
-        }
-        
-        theta = [metric_names.get(m, m) for m in metrics]
-        
-        # Create the plot
-        fig = go.Figure()
-        
-        # Team 1 trace
-        fig.add_trace(go.Scatterpolar(
-            r=[team1_normalized[m] for m in metrics],
-            theta=theta,
-            fill='toself',
-            name=f"{team1['team_name']} ({team1['season_name']})",
-            line_color='#dc3545',
-            opacity=0.8
-        ))
-        
-        # Team 2 trace
-        fig.add_trace(go.Scatterpolar(
-            r=[team2_normalized[m] for m in metrics],
-            theta=theta,
-            fill='toself',
-            name=f"{team2['team_name']} ({team2['season_name']})",
-            line_color='#0d6efd',
-            opacity=0.8
-        ))
-        
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[0, 1]
-                )
-            ),
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.1,
-                xanchor="center",
-                x=0.5
-            ),
-            margin=dict(l=50, r=50, t=50, b=80),
-            height=450,
-            font=dict(
-                family="Open Sans, sans-serif",
-                size=12,
-                color="#333"
+                if df[metric].dtype == object:
+                    df[metric] = pd.to_numeric(df[metric].astype(str).str.replace(',', '.'), errors='coerce')
+            
+            # Obtener valores mínimos y máximos para normalización
+            min_vals = df[metrics].min()
+            max_vals = df[metrics].max()
+            range_vals = max_vals - min_vals
+            range_vals[range_vals == 0] = 1  # Evitar división por cero
+            
+            # Normalizar datos
+            def normalize(row):
+                normalized = {}
+                for metric in metrics:
+                    value = float(row[metric])
+                    if metric in ['UNSUCCESSFUL_PASSES', 'CRITICAL_BALL_LOSS_NUMBER', 'OPPONENT_GOALS']:
+                        # Invertir para métricas donde menos es mejor
+                        normalized[metric] = 1 - (value - min_vals[metric]) / range_vals[metric]
+                    else:
+                        normalized[metric] = (value - min_vals[metric]) / range_vals[metric]
+                return normalized
+            
+            team1_norm = normalize(team1)
+            team2_norm = normalize(team2)
+            
+            # Nombres de métricas más legibles
+            metric_names = {
+                'GOALS': 'Goles',
+                'SUCCESSFUL_PASSES': 'Pases exitosos',
+                'BALL_WIN_NUMBER': 'Recuperaciones',
+                'BYPASSED_OPPONENTS': 'Rivales superados',
+                'UNSUCCESSFUL_PASSES': 'Pases fallidos (↓)',
+                'CRITICAL_BALL_LOSS_NUMBER': 'Pérdidas críticas (↓)',
+                'OPPONENT_GOALS': 'Goles recibidos (↓)'
+            }
+            
+            theta = [metric_names.get(m, m) for m in metrics]
+            
+            fig = go.Figure()
+            
+            fig.add_trace(go.Scatterpolar(
+                r=[team1_norm[m] for m in metrics],
+                theta=theta,
+                fill='toself',
+                name=f"{team1['team_name']} ({team1['season_name']})",
+                line_color='#dc3545',
+                opacity=0.8
+            ))
+            
+            fig.add_trace(go.Scatterpolar(
+                r=[team2_norm[m] for m in metrics],
+                theta=theta,
+                fill='toself',
+                name=f"{team2['team_name']} ({team2['season_name']})",
+                line_color='#0d6efd',
+                opacity=0.8
+            ))
+            
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 1])
+                ),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.1,
+                    xanchor="center",
+                    x=0.5
+                ),
+                margin=dict(l=50, r=50, t=50, b=80),
+                height=450
             )
-        )
-        
-        return fig
-    
+            
+            return fig
+        except Exception as e:
+            print(f"Error in radar_chart: {str(e)}")
+            return go.Figure()
+
     @output
     @render_plotly
     def tsne_plot():
-        df = data_objects['df'].copy()
-        team1 = team1_data()
-        team2 = team2_data()
-        
-        fig = px.scatter(
-            df,
-            x='TSNE_1',
-            y='TSNE_2',
-            color='cluster_name',
-            hover_data=['team_name', 'season_name', 'competition_name'],
-            height=600
-        )
-        
-        if team1 is not None:
-            fig.add_trace(go.Scatter(
-                x=[team1['TSNE_1']],
-                y=[team1['TSNE_2']],
-                mode='markers',
-                marker=dict(size=15, color='red', symbol='star'),
-                name=f"{team1['team_name']} ({team1['season_name']})"
-            ))
-        
-        if team2 is not None:
-            fig.add_trace(go.Scatter(
-                x=[team2['TSNE_1']],
-                y=[team2['TSNE_2']],
-                mode='markers',
-                marker=dict(size=15, color='blue', symbol='star'),
-                name=f"{team2['team_name']} ({team2['season_name']})"
-            ))
-        
-        fig.update_layout(
-            title="Posición en el Espacio de Clústeres",
-            legend_title_text='Cluster'
-        )
-        
-        return fig
-    
+        try:
+            df = data_objects['df'].copy()
+            team1 = team1_data()
+            team2 = team2_data()
+            
+            fig = px.scatter(
+                df, 
+                x='TSNE_1', 
+                y='TSNE_2',
+                color='cluster_name',
+                hover_data=['team_name', 'season_name', 'competition_name'],
+                height=600
+            )
+            
+            if team1 is not None:
+                fig.add_trace(go.Scatter(
+                    x=[team1['TSNE_1']],
+                    y=[team1['TSNE_2']],
+                    mode='markers',
+                    marker=dict(size=15, color='red', symbol='star', line=dict(width=2, color='black')),
+                    name=f"{team1['team_name']} ({team1['season_name']})"
+                ))
+            
+            if team2 is not None:
+                fig.add_trace(go.Scatter(
+                    x=[team2['TSNE_1']],
+                    y=[team2['TSNE_2']],
+                    mode='markers',
+                    marker=dict(size=15, color='blue', symbol='star', line=dict(width=2, color='black')),
+                    name=f"{team2['team_name']} ({team2['season_name']})"
+                ))
+            
+            fig.update_layout(
+                title="Posición en el Espacio de Clústeres",
+                legend_title_text='Cluster'
+            )
+            
+            return fig
+        except Exception as e:
+            print(f"Error in tsne_plot: {str(e)}")
+            return go.Figure()
+
     @output
     @render_plotly
     def cluster_heatmap():
-        centroids = data_objects['kmeans'].cluster_centers_
-        selected_metrics = data_objects['selected_columns']
-        
-        # Crear DataFrame con los centroides
-        centroids_df = pd.DataFrame(
-            centroids,
-            columns=selected_metrics,
-            index=[f'Cluster {i}' for i in range(centroids.shape[0])]
-        )
-        
-        # Normalizar los valores para mejor visualización
-        centroids_normalized = (centroids_df - centroids_df.min()) / (centroids_df.max() - centroids_df.min())
-        
-        fig = px.imshow(
-            centroids_normalized.T,
-            labels=dict(x="Cluster", y="Métrica", color="Valor Normalizado"),
-            color_continuous_scale='RdBu',
-            aspect="auto",
-            height=500
-        )
-        
-        fig.update_layout(
-            title="Características de los Clústeres",
-            xaxis_title="Cluster",
-            yaxis_title="Métrica"
-        )
-        
-        return fig
-    
-    def get_scaled_values(identifier, season_name=None, is_team=True):
         try:
-            if 'df' not in data_objects or 'scaler' not in data_objects or 'selected_columns' not in data_objects:
-                print("Error: Data or scaler not initialized")
+            centroids = data_objects['kmeans'].cluster_centers_
+            selected_metrics = data_objects['selected_columns']
+            
+            centroids_df = pd.DataFrame(
+                centroids,
+                columns=selected_metrics,
+                index=[f'Cluster {i}' for i in range(centroids.shape[0])]
+            )
+            
+            # Normalizar para mejor visualización
+            centroids_normalized = (centroids_df - centroids_df.min()) / (centroids_df.max() - centroids_df.min())
+            
+            fig = px.imshow(
+                centroids_normalized.T,
+                labels=dict(x="Cluster", y="Métrica", color="Valor Normalizado"),
+                color_continuous_scale='RdBu',
+                aspect="auto",
+                height=500
+            )
+            
+            fig.update_layout(
+                title="Características de los Clústeres",
+                xaxis_title="Cluster",
+                yaxis_title="Métrica"
+            )
+            
+            return fig
+        except Exception as e:
+            print(f"Error in cluster_heatmap: {str(e)}")
+            return go.Figure()
+    
+    def get_scaled_values(team_name, season_name):
+        if not team_name or not season_name:
+            return None
+        
+        try:
+            # Obtener fila correspondiente
+            team_row = data_objects['df'][
+                (data_objects['df']['team_name'] == team_name) & 
+                (data_objects['df']['season_name'] == season_name)
+            ]
+            
+            if len(team_row) == 0:
                 return None
-                
-            # Work with a copy to avoid modifying original data
-            df = data_objects['df'].copy()
             
-            # Convert numeric columns
-            for col in data_objects['selected_columns']:
-                if df[col].dtype == object:
-                    df[col] = df[col].str.replace(',', '.').astype(float)
+            # Preparar datos en el orden correcto
+            values = team_row[data_objects['selected_columns']].values.astype(float)
             
-            if is_team:
-                filter_condition = (df['team_name'] == identifier)
-                if season_name:
-                    filter_condition &= (df['season_name'] == season_name)
-            else:
-                filter_condition = (df['playerName'] == identifier)
-                if season_name:
-                    filter_condition &= (df['season_name'] == season_name)
-                    
-            data = df[filter_condition]
+            # Convertir a DataFrame para mantener nombres
+            values_df = pd.DataFrame(values, columns=data_objects['selected_columns'])
             
-            if len(data) != 1:
-                print(f"Error: Found {len(data)} records for {identifier}")
-                return None
-            
-            # Get values in correct order and ensure numeric
-            values = data[data_objects['selected_columns']].values.astype(float)
-            scaled_values = data_objects['scaler'].transform(values)
+            # Escalar
+            scaled_values = data_objects['scaler'].transform(values_df)
             
             return scaled_values
-                
+            
         except Exception as e:
             print(f"Error in get_scaled_values: {str(e)}")
             return None
@@ -5942,15 +5938,16 @@ def server(input, output, session):
         """Filtra jugadores basado en los criterios seleccionados"""
         # Hacer que dependa del trigger aunque no lo use directamente
         update_trigger()
-        
-        df4 = datos().copy()
-        df = df[df["playDuration"] >= (4530 * 0.30)]  # Mínimo 30% de minutos
+    
+        # Make sure you're using the correct DataFrame - replace 'datos()' with your actual data source
+        df_filtered = df.copy()  # Or whichever DataFrame contains player data
+        df_filtered = df_filtered[df_filtered["playDuration"] >= (4530 * 0.30)]  # Mínimo 30% de minutos
         
         # Solo aplicar similitud si hay equipo seleccionado y el switch está activado
         if input.selected_team() and input.use_similarity_switch():
-            df = apply_team_similarity_adjustment(df)
-        
-        return df
+            df_filtered = apply_team_similarity_adjustment(df_filtered)
+    
+        return df_filtered
 
 
     def get_ordered_positions(df):
