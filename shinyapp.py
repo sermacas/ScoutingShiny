@@ -267,7 +267,6 @@ def sync_get_detailed_transfermarkt_results(query, max_retries=3):
         except Exception as e:
             return [{"Error": f"Error inesperado: {e}"}]
         
-
 def sync_scrape_player_info(url):
     """Versión síncrona del scraper de detalles de jugador"""
     headers = {
@@ -6380,4 +6379,4 @@ def server(input, output, session):
 # ======================
 # EJECUCIÓN DE LA APLICACIÓN
 # ======================
-app = App(app_ui, server)
+App(app_ui, server)
