@@ -1929,9 +1929,6 @@ def create_team_comparison_tab():
         )
     )
 
-Claro, aquí tienes el código corregido sin la pestaña extra "Análisis Avanzado". Ahora la pestaña "Similitud de Equipos" solo tendrá directamente el contenido, sin un `nav_panel` adicional dentro:
-
-```python
 def cretate_similar_tab():
     """Crea la pestaña de comparación de equipos con la app integrada"""
     return ui.nav_panel("Similitud de Equipos",
