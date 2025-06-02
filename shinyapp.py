@@ -2175,7 +2175,6 @@ def cretate_similar_tab():
             )
         )
     )
-```
     
 def create_table_filters():
     """Crea los controles de filtrado para la tabla"""
