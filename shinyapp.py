@@ -53,9 +53,6 @@ credentials = Credentials.from_service_account_info(
 # Autorización y conexión con gspread
 gc = gspread.authorize(credentials)
 
-
-
-
 # Ruta al archivo JSON con credenciales de la cuenta de servicio
 SERVICE_ACCOUNT_FILE = "/Users/sergiomarincastro/Big Data Deportivo/Proyectos/TFG/mi_archivo_credenciales.json"
 
@@ -1931,16 +1928,14 @@ def create_team_comparison_tab():
 
 def cretate_similar_tab():
     """Crea la pestaña de comparación de equipos con la app integrada"""
-    return ui.nav_panel("Similitud de Equipos",
-        ui.navset_tab(
-            # Aquí integramos tu aplicación completa sin pestaña extra
-            ui.div(
-                ui.div(
-                    ui.tags.head(
-                        ui.tags.link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"),
-                        ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
-                        ui.tags.link(href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap", rel="stylesheet"),
-                        ui.tags.style("""
+    return ui.nav_panel(
+        "Similitud de Equipos",
+        ui.div(
+            ui.tags.head(
+                ui.tags.link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"),
+                ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
+                ui.tags.link(href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap", rel="stylesheet"),
+                ui.tags.style("""
                             /* Aquí puedes pegar todos los estilos CSS de tu app original */
                             :root {
                                 --primary-color: #3498db;
@@ -2084,97 +2079,96 @@ def cretate_similar_tab():
                         """)
                     ),
                     ui.layout_sidebar(
-                        ui.sidebar(
-                            ui.h4("Parámetros de Comparación", class_="card-title"),
-                            ui.input_selectize(
-                                "team1_name",
-                                "Equipo 1",
-                                choices=data_objects['unique_teams'],
-                                selected=data_objects['unique_teams'][0] if data_objects['unique_teams'] else None
+                ui.sidebar(
+                    ui.h4("Parámetros de Comparación", class_="card-title"),
+                    ui.input_selectize(
+                        "team1_name",
+                        "Equipo 1",
+                        choices=data_objects['unique_teams'],
+                        selected=data_objects['unique_teams'][0] if data_objects['unique_teams'] else None
+                    ),
+                    ui.input_selectize(
+                        "team1_season",
+                        "Temporada",
+                        choices=[],
+                        selected=None
+                    ),
+                    ui.input_selectize(
+                        "team2_name",
+                        "Equipo 2",
+                        choices=data_objects['unique_teams'],
+                        selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
+                    ),
+                    ui.input_selectize(
+                        "team2_season",
+                        "Temporada",
+                        choices=[],
+                        selected=None
+                    ),
+                    width=300
+                ),
+                ui.navset_tab(
+                    ui.nav_panel(
+                        "Comparación Directa",
+                        ui.layout_columns(
+                            ui.card(
+                                ui.card_header("Perfil del Equipo 1"),
+                                ui.output_ui("team1_card"),
+                                class_="team-profile team1-profile",
+                                height="100%"
                             ),
-                            ui.input_selectize(
-                                "team1_season",
-                                "Temporada",
-                                choices=[],
-                                selected=None
+                            ui.card(
+                                ui.card_header("Perfil del Equipo 2"),
+                                ui.output_ui("team2_card"),
+                                class_="team-profile team2-profile",
+                                height="100%"
                             ),
-                            ui.input_selectize(
-                                "team2_name",
-                                "Equipo 2",
-                                choices=data_objects['unique_teams'],
-                                selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
-                            ),
-                            ui.input_selectize(
-                                "team2_season",
-                                "Temporada",
-                                choices=[],
-                                selected=None
-                            ),
-                            width=300
+                            col_widths=(6, 6),
+                            height="400px"
                         ),
-                        ui.navset_tab(
-                            ui.nav_panel(
-                                "Comparación Directa",
-                                ui.layout_columns(
-                                    ui.card(
-                                        ui.card_header("Perfil del Equipo 1"),
-                                        ui.output_ui("team1_card"),
-                                        class_="team-profile team1-profile",
-                                        height="100%"
-                                    ),
-                                    ui.card(
-                                        ui.card_header("Perfil del Equipo 2"),
-                                        ui.output_ui("team2_card"),
-                                        class_="team-profile team2-profile",
-                                        height="100%"
-                                    ),
-                                    col_widths=(6, 6),
-                                    height="400px"
-                                ),
-                                ui.card(
-                                    ui.card_header("Análisis de Similitud"),
-                                    ui.output_text("similarity_score"),
-                                    class_="text-center py-3 bg-light"
-                                ),
-                                ui.card(
-                                    ui.card_header("Comparación Radar"),
-                                    output_widget("radar_chart2"),
-                                    class_="plot-container"
-                                ),
-                                ui.card(
-                                    ui.card_header("Posición en el Espacio de Clústeres"),
-                                    output_widget("tsne_plot"),
-                                    class_="plot-container"
-                                )
-                            ),
-                            ui.nav_panel(
-                                "Equipos Similares",
-                                ui.layout_columns(
-                                    ui.card(
-                                        ui.card_header(ui.output_text("similar_teams_team1_title")),
-                                        ui.output_ui("similar_teams_team1"),
-                                        class_="similarity-card"
-                                    ),
-                                    ui.card(
-                                        ui.card_header(ui.output_text("similar_teams_team2_title")),
-                                        ui.output_ui("similar_teams_team2"),
-                                        class_="similarity-card"
-                                    ),
-                                    col_widths=(6, 6)
-                                ),
-                                ui.card(
-                                    ui.card_header("Características de los Clústeres"),
-                                    output_widget("cluster_heatmap"),
-                                    class_="plot-container"
-                                )
-                            )
+                        ui.card(
+                            ui.card_header("Análisis de Similitud"),
+                            ui.output_text("similarity_score"),
+                            class_="text-center py-3 bg-light"
                         ),
-                        class_="main-container"
+                        ui.card(
+                            ui.card_header("Comparación Radar"),
+                            output_widget("radar_chart2"),
+                            class_="plot-container"
+                        ),
+                        ui.card(
+                            ui.card_header("Posición en el Espacio de Clústeres"),
+                            output_widget("tsne_plot"),
+                            class_="plot-container"
+                        )
+                    ),
+                    ui.nav_panel(
+                        "Equipos Similares",
+                        ui.layout_columns(
+                            ui.card(
+                                ui.card_header(ui.output_text("similar_teams_team1_title")),
+                                ui.output_ui("similar_teams_team1"),
+                                class_="similarity-card"
+                            ),
+                            ui.card(
+                                ui.card_header(ui.output_text("similar_teams_team2_title")),
+                                ui.output_ui("similar_teams_team2"),
+                                class_="similarity-card"
+                            ),
+                            col_widths=(6, 6)
+                        ),
+                        ui.card(
+                            ui.card_header("Características de los Clústeres"),
+                            output_widget("cluster_heatmap"),
+                            class_="plot-container"
+                        )
                     )
-                )
+                ),
+                class_="main-container"
             )
         )
     )
+    
     
 def create_table_filters():
     """Crea los controles de filtrado para la tabla"""
