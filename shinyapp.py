@@ -1931,37 +1931,38 @@ def create_team_comparison_tab():
 
 def cretate_similar_tab():
     """Crea la pestaña de comparación de equipos con la app integrada"""
-    return ui.nav_panel(
-        "Similitud de Equipos",
+    return ui.nav_panel("Similitud de Equipos",
         ui.navset_tab(
-            # Aquí integramos tu aplicación completa
-            ui.div(
+            ui.nav_panel("Análisis Avanzado",
+                # Aquí integramos tu aplicación completa
                 ui.div(
-                    ui.tags.head(
-                        ui.tags.link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"),
-                        ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
-                        ui.tags.link(href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap", rel="stylesheet"),
-                        ui.tags.style("""
-                            /* Aquí puedes pegar todos los estilos CSS de tu app original */
-                            :root {
-                                --primary-color: #3498db;
-                                --secondary-color: #2c3e50;
-                                --accent-color: #e74c3c;
-                                --light-color: #ecf0f1;
-                                --dark-color: #2c3e50;
-                                --success-color: #2ecc71;
-                                --warning-color: #f39c12;
-                                --info-color: #3498db;
-                                --border-radius: 8px;
-                                --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                                --transition: all 0.3s ease;
-                            }
-                            body {
+                    ui.div(
+                        ui.tags.head(
+                            ui.tags.link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"),
+                            ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
+                            ui.tags.link(href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap", rel="stylesheet"),
+                            ui.tags.style("""
+                                /* Aquí puedes pegar todos los estilos CSS de tu app original */
+                                :root {
+                                    --primary-color: #3498db;
+                                    --secondary-color: #2c3e50;
+                                    --accent-color: #e74c3c;
+                                    --light-color: #ecf0f1;
+                                    --dark-color: #2c3e50;
+                                    --success-color: #2ecc71;
+                                    --warning-color: #f39c12;
+                                    --info-color: #3498db;
+                                    --border-radius: 8px;
+                                    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                    --transition: all 0.3s ease;
+                                }
+                                                body {
                                 font-family: 'Open Sans', sans-serif;
                                 background-color: #f5f7fa;
                                 color: #333;
                                 line-height: 1.6;
                             }
+                            
                             .app-header {
                                 background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
                                 color: white;
@@ -1970,16 +1971,19 @@ def cretate_similar_tab():
                                 border-radius: 0 0 var(--border-radius) var(--border-radius);
                                 box-shadow: var(--box-shadow);
                             }
+                            
                             .app-title {
                                 font-weight: 700;
                                 margin-bottom: 0.5rem;
                                 font-size: 2.2rem;
                             }
+                            
                             .app-subtitle {
                                 font-weight: 400;
                                 opacity: 0.9;
                                 font-size: 1.1rem;
                             }
+                            
                             .card {
                                 background-color: white;
                                 border-radius: var(--border-radius);
@@ -1989,10 +1993,12 @@ def cretate_similar_tab():
                                 border: none;
                                 transition: var(--transition);
                             }
+                            
                             .card:hover {
                                 box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
                                 transform: translateY(-2px);
                             }
+                            
                             .card-title {
                                 color: var(--secondary-color);
                                 font-weight: 600;
@@ -2000,6 +2006,7 @@ def cretate_similar_tab():
                                 padding-bottom: 0.5rem;
                                 border-bottom: 2px solid var(--light-color);
                             }
+                            
                             .btn-primary {
                                 background-color: var(--primary-color);
                                 border: none;
@@ -2008,26 +2015,32 @@ def cretate_similar_tab():
                                 font-weight: 600;
                                 transition: var(--transition);
                             }
+                            
                             .btn-primary:hover {
                                 background-color: #2980b9;
                                 transform: translateY(-1px);
                             }
+                            
                             .form-control, .selectize-input {
                                 border-radius: var(--border-radius);
                                 border: 1px solid #ddd;
                                 padding: 0.5rem 0.75rem;
                                 transition: var(--transition);
                             }
+                            
                             .form-control:focus, .selectize-input.focus {
                                 border-color: var(--primary-color);
                                 box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
                             }
+                            
                             .selectize-dropdown {
-                                z-index: 1050 !important;
+                            z-index: 1050 !important;
                             }
+
                             .nav-tabs {
                                 border-bottom: 4px solid #e2e8f0;
                             }
+                            
                             .nav-tabs .nav-link {
                                 color: #64748b;
                                 font-weight: 800;
@@ -2035,15 +2048,18 @@ def cretate_similar_tab():
                                 padding: 0.75rem 1.5rem;
                                 transition: var(--transition);
                             }
+                            
                             .nav-tabs .nav-link:hover {
                                 color: var(--primary-color);
                                 background-color: #f8fafc;
                             }
+                            
                             .nav-tabs .nav-link.active {
                                 color: var(--primary-color);
                                 background-color: transparent;
                                 border-bottom: 4px solid var(--primary-color);
                             }
+                            
                             /* Radar chart container */
                             .radar-container {
                                 height: 500px;
@@ -2051,132 +2067,137 @@ def cretate_similar_tab():
                                 width: 100%;
                                 position: relative;
                             }
+                            
                             .team-profile {
                                 border-left: 4px solid;
                                 padding-left: 15px;
                             }
+                            
                             .team1-profile {
                                 border-color: #dc3545;
                             }
+                            
                             .team2-profile {
                                 border-color: #0d6efd;
                             }
+                            
                             .similarity-badge {
                                 font-size: 0.9rem;
                                 padding: 0.35em 0.65em;
                             }
+                            
                             .similarity-card {
                                 min-height: 300px;
                             }
+                            
                             .cluster-plot-container {
                                 height: 600px;
                                 margin-top: 20px;
                             }
+                            
                             .main-container {
                                 max-width: 95%;
                                 margin: 0 auto;
                                 padding-bottom: 2rem;
                             }
+                            
                             @media (max-width: 768px) {
                                 .radar-container {
                                     height: 400px;
                                 }
                             }
                         """)
-                    ),
-                    ui.layout_sidebar(
-                        ui.sidebar(
-                            ui.h4("Parámetros de Comparación", class_="card-title"),
-                            ui.input_selectize(
-                                "team1_name", 
-                                "Equipo 1",
-                                choices=data_objects['unique_teams'],
-                                selected=data_objects['unique_teams'][0] if data_objects['unique_teams'] else None
-                            ),
-                            ui.input_selectize(
-                                "team1_season", 
-                                "Temporada",
-                                choices=[],
-                                selected=None
-                            ),
-                            ui.input_selectize(
-                                "team2_name", 
-                                "Equipo 2",
-                                choices=data_objects['unique_teams'],
-                                selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
-                            ),
-                            ui.input_selectize(
-                                "team2_season", 
-                                "Temporada",
-                                choices=[],
-                                selected=None
-                            ),
-                            width=300
                         ),
-                        ui.navset_tab(
-                            ui.nav_panel(
-                                "Comparación Directa",
-                                ui.layout_columns(
-                                    ui.card(
-                                        ui.card_header("Perfil del Equipo 1"),
-                                        ui.output_ui("team1_card"),
-                                        class_="team-profile team1-profile",
-                                        height="100%"
-                                    ),
-                                    ui.card(
-                                        ui.card_header("Perfil del Equipo 2"),
-                                        ui.output_ui("team2_card"),
-                                        class_="team-profile team2-profile",
-                                        height="100%"
-                                    ),
-                                    col_widths=(6, 6),
-                                    height="400px"
+                        ui.layout_sidebar(
+                            ui.sidebar(
+                                ui.h4("Parámetros de Comparación", class_="card-title"),
+                                ui.input_selectize(
+                                    "team1_name", 
+                                    "Equipo 1",
+                                    choices=data_objects['unique_teams'],
+                                    selected=data_objects['unique_teams'][0] if data_objects['unique_teams'] else None
                                 ),
-                                ui.card(
-                                    ui.card_header("Análisis de Similitud"),
-                                    ui.output_text("similarity_score"),
-                                    class_="text-center py-3 bg-light"
+                                ui.input_selectize(
+                                    "team1_season", 
+                                    "Temporada",
+                                    choices=[],
+                                    selected=None
                                 ),
-                                ui.card(
-                                    ui.card_header("Comparación Radar"),
-                                    output_widget("radar_chart2"),
-                                    class_="plot-container"
+                                ui.input_selectize(
+                                    "team2_name", 
+                                    "Equipo 2",
+                                    choices=data_objects['unique_teams'],
+                                    selected=data_objects['unique_teams'][1] if len(data_objects['unique_teams']) > 1 else None
                                 ),
-                                ui.card(
-                                    ui.card_header("Posición en el Espacio de Clústeres"),
-                                    output_widget("tsne_plot"),
-                                    class_="plot-container"
-                                )
+                                ui.input_selectize(
+                                    "team2_season", 
+                                    "Temporada",
+                                    choices=[],
+                                    selected=None
+                                ),
+                                width=300
                             ),
-                            ui.nav_panel(
-                                "Equipos Similares",
-                                ui.layout_columns(
-                                    ui.card(
-                                        ui.card_header(ui.output_text("similar_teams_team1_title")),
-                                        ui.output_ui("similar_teams_team1"),
-                                        class_="similarity-card"
+                            ui.navset_tab(
+                                ui.nav_panel(
+                                    "Comparación Directa",
+                                    ui.layout_columns(
+                                        ui.card(
+                                            ui.card_header("Perfil del Equipo 1"),
+                                            ui.output_ui("team1_card"),
+                                            class_="team-profile team1-profile",
+                                            height="100%"
+                                        ),
+                                        ui.card(
+                                            ui.card_header("Perfil del Equipo 2"),
+                                            ui.output_ui("team2_card"),
+                                            class_="team-profile team2-profile",
+                                            height="100%"
+                                        ),
+                                        col_widths=(6, 6),
+                                        height="400px"
                                     ),
                                     ui.card(
-                                        ui.card_header(ui.output_text("similar_teams_team2_title")),
-                                        ui.output_ui("similar_teams_team2"),
-                                        class_="similarity-card"
+                                        ui.card_header("Análisis de Similitud"),
+                                        ui.output_text("similarity_score"),
+                                        class_="text-center py-3 bg-light"
                                     ),
-                                    col_widths=(6, 6)
+                                    ui.card(
+                                        ui.card_header("Comparación Radar"),
+                                        output_widget("radar_chart2"),
+                                        class_="plot-container"
+                                    ),
+                                    ui.card(
+                                        ui.card_header("Posición en el Espacio de Clústeres"),
+                                        output_widget("tsne_plot"),
+                                        class_="plot-container"
+                                    )
                                 ),
-                                ui.card(
-                                    ui.card_header("Características de los Clústeres"),
-                                    output_widget("cluster_heatmap"),
-                                    class_="plot-container"
+                                ui.nav_panel(
+                                    "Equipos Similares",
+                                    ui.layout_columns(
+                                        ui.card(
+                                            ui.card_header(ui.output_text("similar_teams_team1_title")),
+                                            ui.output_ui("similar_teams_team1"),
+                                            class_="similarity-card"
+                                        ),
+                                        ui.card(
+                                            ui.card_header(ui.output_text("similar_teams_team2_title")),
+                                            ui.output_ui("similar_teams_team2"),
+                                            class_="similarity-card"
+                                        ),
+                                        col_widths=(6, 6)
+                                    ),
+                                    ui.card(
+                                        ui.card_header("Características de los Clústeres"),
+                                        output_widget("cluster_heatmap"),
+                                        class_="plot-container"
+                                    )
                                 )
                             )
-                        )
-                    ),
-                    class_="main-container"
-                )
-            )
-        )
-    )
-
+                        ),
+                        class_="main-container"
+                    )
+                ))))
     
 def create_table_filters():
     """Crea los controles de filtrado para la tabla"""
