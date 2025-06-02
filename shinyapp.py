@@ -2980,7 +2980,7 @@ app_ui = ui.page_fluid(
         create_team_comparison_tab(),
         cretate_similar_tab(),
         ui.nav_panel(
-            "Similitud por Posición",
+            "Recomendación de jugadores",
             ui.div(
                 {"class": "summary-container"},
                 ui.card(
