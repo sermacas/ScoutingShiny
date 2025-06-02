@@ -1933,7 +1933,6 @@ def cretate_similar_tab():
     """Crea la pestaña de comparación de equipos con la app integrada"""
     return ui.nav_panel("Similitud de Equipos",
         ui.navset_tab(
-            ui.nav_panel("Análisis Avanzado",
                 # Aquí integramos tu aplicación completa
                 ui.div(
                     ui.div(
@@ -2197,7 +2196,7 @@ def cretate_similar_tab():
                         ),
                         class_="main-container"
                     )
-                ))))
+                )))
     
 def create_table_filters():
     """Crea los controles de filtrado para la tabla"""
